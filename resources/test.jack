@@ -1,5 +1,0 @@
-class Point {
-    method int getx() {
-        return x;
-    }
-}
