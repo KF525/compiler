@@ -1,4 +1,4 @@
-package kfulton.nand2tetris2.analyzer.tokenizer.printer
+package kfulton.nand2tetris2.analyzer.printer
 
 import kfulton.nand2tetris2.analyzer.tokenizer.tokens._
 
@@ -22,6 +22,7 @@ class XMLPrinter {
 
   def saveXML(fileName: String, xml: Node) = scala.xml.XML.save(s"$fileName.xml", xml)
 
+  //TODO: This is going to become more complex - currently it is printing flat
   private def addChild(n: Node, newChild: Node): Node =
     Elem.apply(n.prefix, n.label, n.attributes, n.scope, true, n.child ++ newChild : _*)
 }

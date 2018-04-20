@@ -11,7 +11,8 @@ class JackAnalyzerTest extends FlatSpec with Matchers {
   }
 
   "createStream" should "" in {
-    val stream = jackAnalyzer.createStream("/Users/katefulton/Desktop/N2T/compiler/src/main/resources/simpletest.jack")
-    stream shouldBe Stream("class Point {", "", "}")
+    pending
+//    val stream = jackAnalyzer.createStream("/Users/katefulton/Desktop/N2T/compiler/src/main/resources/simpletest.jack")
+//    stream shouldBe Stream("class Point {", "", "}")
   }
 }

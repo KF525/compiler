@@ -1,32 +1,37 @@
 package kfulton.nand2tetris2.analyzer.tokenizer
 
-import kfulton.nand2tetris2.analyzer.tokenizer.tokens.{Class, IntToken, KeywordToken, LeftParen, SymbolToken, TokenizerError}
+import kfulton.nand2tetris2.analyzer.tokenizer.tokens._
 import org.scalatest.{FlatSpec, Matchers}
 
 class TokenizerTest extends FlatSpec with Matchers {
   val tokenizer = new Tokenizer
 
-  //"class Pointe { method int getx() { return x;} }"
   "advance" should "find the next token and return token type" in {
     val program = "class {" #:: "return }" #:: Stream.empty
-    val tokens = tokenizer.advance(program)._1
+    val tokens = tokenizer.advance(program)
     tokens.size shouldBe 4
     tokens.head.isLeft shouldBe true
     tokens.head match {
-      case Left(key) => key shouldBe KeywordToken(Class)
+      case Left(k) => k shouldBe KeywordToken(Class)
       case _ => "Should not hit this case"
     }
   }
 
+  it should "handle multiple lines with different token types" in {
+//    val program = "class Point {" #:: "method int getx() {" #:: "return x;}}" #:: Stream.empty
+//    val tokens = tokenizer.advance(program)
+//    tokens.size shouldBe 13
+  }
+
   it should "handle single line comments" in {
-    val program = "class {" #:: "//This is a comment" #:: "return }" #:: Stream.empty
-    val tokens = tokenizer.advance(program)._1
+    val program = "class {" #:: "// This is a comment" #:: "return }" #:: Stream.empty
+    val tokens = tokenizer.advance(program)
     tokens.size shouldBe 4
   }
 
   it should "handle multiline comments" in {
-    val program = "class {" #:: "/*This" #:: "class should not count */ return }" #:: Stream.empty
-    val tokens = tokenizer.advance(program)._1
+    val program = "class { " #:: "/* This" #:: "class should not count */ return } " #:: Stream.empty
+    val tokens = tokenizer.advance(program)
     tokens.size shouldBe 4
   }
 
@@ -40,8 +45,8 @@ class TokenizerTest extends FlatSpec with Matchers {
   }
 
   it should "ignore white space" in {
-    val whiteSpace = "  "
-    tokenizer.isSignalLineIgnored(whiteSpace) shouldBe true
+    val whiteSpace = " "
+    tokenizer.isSignalSpaceIgnored(whiteSpace) shouldBe true
   }
 
   "tokenType" should "return the correct symbol token type" in {
@@ -67,10 +72,14 @@ class TokenizerTest extends FlatSpec with Matchers {
   }
 
   it should "return the correct string constant token type" in {
-    pending
+    tokenizer.tokenType("\"string\"") shouldBe Left(StringToken("string"))
   }
 
   it should "return the correct identifier token type" in {
-    pending
+    tokenizer.tokenType("id_ex0") shouldBe Left(IdentifierToken("id_ex0"))
+  }
+
+  it should "return an identifier even if a keyword is present" in {
+    tokenizer.tokenType("class_is_identifier") shouldBe Left(IdentifierToken("class_is_identifier"))
   }
 }

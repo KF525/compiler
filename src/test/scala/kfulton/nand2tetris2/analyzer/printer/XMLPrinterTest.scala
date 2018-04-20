@@ -1,4 +1,4 @@
-package kfulton.nand2tetris2.analyzer.tokenizer.printer
+package kfulton.nand2tetris2.analyzer.printer
 
 import kfulton.nand2tetris2.analyzer.tokenizer
 import kfulton.nand2tetris2.analyzer.tokenizer.{tokens, _}
