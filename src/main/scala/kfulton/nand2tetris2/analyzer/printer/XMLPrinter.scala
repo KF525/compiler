@@ -5,11 +5,14 @@ import kfulton.nand2tetris2.analyzer.tokenizer.tokens._
 import scala.xml.{Elem, Node}
 class XMLPrinter {
 
-  def printTokens(tokens: Stream[Token], currentXML: Node = <tokens></tokens>): Node = tokens match {
+  def printTokens(tokens: Stream[Either[Token, TokenizerError]], currentXML: Node = <tokens></tokens>): Node = tokens match {
     case Stream.Empty => currentXML
-    case h #:: t =>
-      val updatedNode = addChild(currentXML, printToken(h))
-      printTokens(t, updatedNode)
+    case h #:: t => h match {
+      case Left(token) =>
+        val updatedNode = addChild(currentXML, printToken(token))
+        printTokens(t, updatedNode)
+    }
+
   }
 
   def printToken(token: Token): Node =  token match {

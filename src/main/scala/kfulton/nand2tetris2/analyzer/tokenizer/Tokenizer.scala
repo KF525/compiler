@@ -2,7 +2,6 @@ package kfulton.nand2tetris2.analyzer.tokenizer
 
 import kfulton.nand2tetris2.analyzer.tokenizer.tokens._
 
-//TODO: Fix issue with spaces
 class Tokenizer {
 
   def advance(lines: Stream[String], tokens: Stream[Either[Token, TokenizerError]] = Stream.empty,
@@ -26,11 +25,11 @@ class Tokenizer {
       case (h :: t, false) if isMultiLineStart(current ++ h.toString) => tokenizeLine(h.toString, t, insideMLComment = true, tokens)
       case (h :: t, false) if isSignalSpaceIgnored(current) => tokenizeLine(h.toString, t, insideMLComment, tokens)
       case (h :: t, false) if isSignalLineIgnored(current ++ h.toString) => (tokens, insideMLComment)
-      case (h :: t, true) if isMultiLineClose(current) => tokenizeLine(h.toString, t, insideMLComment = false, tokens)
       case (h :: t, false) if tokenType(current ++ h.toString).isLeft => tokenizeLine(current ++ h.toString, t, insideMLComment, tokens)
       case (h :: t, false) if tokenType(current).isLeft => tokenizeLine(h.toString, t, insideMLComment, Stream.concat(tokens, Stream.apply(tokenType(current))))
       case (h :: t, false) if tokenType(current).isRight => tokenizeLine(current ++ h.toString, t, insideMLComment, tokens)
       case (h :: t, false) => tokenizeLine(current ++ h.toString, t, insideMLComment, tokens)
+      case (h :: t, true) if isMultiLineClose(current) => tokenizeLine(h.toString, t, insideMLComment = false, tokens)
       case (h :: t, true) => tokenizeLine(current ++ h.toString, t, insideMLComment, tokens)
     }
 

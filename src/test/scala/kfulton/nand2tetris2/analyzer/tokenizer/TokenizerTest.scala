@@ -18,9 +18,22 @@ class TokenizerTest extends FlatSpec with Matchers {
   }
 
   it should "handle multiple lines with different token types" in {
-//    val program = "class Point {" #:: "method int getx() {" #:: "return x;}}" #:: Stream.empty
-//    val tokens = tokenizer.advance(program)
-//    tokens.size shouldBe 13
+    val program = "class Point {" #:: "method int getx() {" #:: "return x;}}" #:: Stream.empty
+    val tokens = tokenizer.advance(program)
+    tokens.head shouldBe Left(KeywordToken(Class))
+    tokens.tail.head shouldBe Left(IdentifierToken("Point"))
+    tokens.tail.tail.head shouldBe Left(SymbolToken(LeftCurlyBracket))
+    tokens.tail.tail.tail.head shouldBe Left(KeywordToken(Method))
+    tokens.tail.tail.tail.tail.head shouldBe Left(IdentifierToken("int"))
+    tokens.tail.tail.tail.tail.tail.head shouldBe Left(IdentifierToken("getx"))
+    tokens.tail.tail.tail.tail.tail.tail.head shouldBe Left(SymbolToken(LeftParen))
+    tokens.tail.tail.tail.tail.tail.tail.tail.head shouldBe Left(SymbolToken(RightParen))
+    tokens.tail.tail.tail.tail.tail.tail.tail.tail.head shouldBe Left(SymbolToken(LeftCurlyBracket))
+    tokens.tail.tail.tail.tail.tail.tail.tail.tail.tail.head shouldBe Left(KeywordToken(Return))
+    tokens.tail.tail.tail.tail.tail.tail.tail.tail.tail.tail.head shouldBe Left(IdentifierToken("x"))
+    tokens.tail.tail.tail.tail.tail.tail.tail.tail.tail.tail.tail.head shouldBe Left(SymbolToken(SemiColon))
+    tokens.tail.tail.tail.tail.tail.tail.tail.tail.tail.tail.tail.tail.head shouldBe Left(SymbolToken(RightCurlyBracket))
+    tokens.size shouldBe 14
   }
 
   it should "handle single line comments" in {
@@ -35,8 +48,18 @@ class TokenizerTest extends FlatSpec with Matchers {
     tokens.size shouldBe 4
   }
 
+  it should "handle multiple white space" in {
+    val program = "  class" #:: Stream.empty
+    val tokens = tokenizer.advance(program)
+    tokens.size shouldBe 1
+  }
+
+  //TODO: How do we want to fail? Right now as soon as we hit an invalid token, nothing else gets written.
   it should "return a TokenizerError if it cannot find a valid token" in {
-    pending
+    val programWithInvalid = "class %" #:: Stream.empty
+    val tokens = tokenizer.advance(programWithInvalid)
+    tokens.size shouldBe 1
+    tokens.head shouldBe Left(KeywordToken(Class))
   }
 
   "isIgnored" should "ignore non-tokens like white space and comments" in {
@@ -55,10 +78,6 @@ class TokenizerTest extends FlatSpec with Matchers {
 
   it should "return the correct keyword token type" in {
     tokenizer.tokenType("class") shouldBe Left(KeywordToken(Class))
-  }
-
-  it should "return a tokenizerError when token is invalid" in {
-    tokenizer.tokenType("%") shouldBe Right(TokenizerError("% is invalid token."))
   }
 
   it should "return the correct integer token type" in {
@@ -81,5 +100,9 @@ class TokenizerTest extends FlatSpec with Matchers {
 
   it should "return an identifier even if a keyword is present" in {
     tokenizer.tokenType("class_is_identifier") shouldBe Left(IdentifierToken("class_is_identifier"))
+  }
+
+  it should "return a tokenizerError when token is invalid" in {
+    tokenizer.tokenType("%") shouldBe Right(TokenizerError("% is invalid token."))
   }
 }
