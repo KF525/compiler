@@ -18,7 +18,7 @@ class TokenizerTest extends FlatSpec with Matchers {
   }
 
   it should "handle multiple lines with different token types" in {
-    val program = "class Point {" #:: "method int getx() {" #:: "return x;}}" #:: Stream.empty
+    val program = "class Point {" #:: " method int getx() {" #:: "return x;}}" #:: Stream.empty
     val tokens = tokenizer.advance(program)
     tokens.head shouldBe Left(KeywordToken(Class))
     tokens.tail.head shouldBe Left(IdentifierToken("Point"))
@@ -49,9 +49,9 @@ class TokenizerTest extends FlatSpec with Matchers {
   }
 
   it should "handle multiple white space" in {
-    val program = "  class" #:: Stream.empty
+    val program = "  class" #:: " \"tab\"" #:: Stream.empty
     val tokens = tokenizer.advance(program)
-    tokens.size shouldBe 1
+    tokens.size shouldBe 2
   }
 
   //TODO: How do we want to fail? Right now as soon as we hit an invalid token, nothing else gets written.
@@ -69,7 +69,12 @@ class TokenizerTest extends FlatSpec with Matchers {
 
   it should "ignore white space" in {
     val whiteSpace = " "
-    tokenizer.isSignalSpaceIgnored(whiteSpace) shouldBe true
+    tokenizer.isWhiteSpaceIgnored(whiteSpace) shouldBe true
+  }
+
+  it should "ignore tab space" in {
+    val tabSpace = "  "
+    tokenizer.isWhiteSpaceIgnored(tabSpace) shouldBe true
   }
 
   "tokenType" should "return the correct symbol token type" in {

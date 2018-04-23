@@ -15,7 +15,6 @@ class Tokenizer {
     finalTokens
   }
 
-  //TODO: Losing some tokens
   def tokenizeLine(current: String, lines: List[Char], insideMLComment: Boolean,
                    tokens: Stream[Either[Token, TokenizerError]] = Stream.empty): (Stream[Either[Token, TokenizerError]], Boolean) =
     (lines, insideMLComment) match {
@@ -23,7 +22,7 @@ class Tokenizer {
       case (Nil, false) if tokenType(current).isLeft => (Stream.concat(tokens, Stream.apply(tokenType(current))), insideMLComment)
       case (Nil, false) if tokenType(current).isRight => (tokens, insideMLComment)
       case (h :: t, false) if isMultiLineStart(current ++ h.toString) => tokenizeLine(h.toString, t, insideMLComment = true, tokens)
-      case (h :: t, false) if isSignalSpaceIgnored(current) => tokenizeLine(h.toString, t, insideMLComment, tokens)
+      case (h :: t, false) if isWhiteSpaceIgnored(current) => tokenizeLine(h.toString, t, insideMLComment, tokens)
       case (h :: t, false) if isSignalLineIgnored(current ++ h.toString) => (tokens, insideMLComment)
       case (h :: t, false) if tokenType(current ++ h.toString).isLeft => tokenizeLine(current ++ h.toString, t, insideMLComment, tokens)
       case (h :: t, false) if tokenType(current).isLeft => tokenizeLine(h.toString, t, insideMLComment, Stream.concat(tokens, Stream.apply(tokenType(current))))
@@ -49,9 +48,11 @@ class Tokenizer {
    }
  }
 
-  def isSignalSpaceIgnored(input: String): Boolean = {
+  def isWhiteSpaceIgnored(input: String): Boolean = {
+    val tabSpacePattern = "^\\t+".r
     val whiteSpacePattern = "^\\s+$".r
-    if (whiteSpacePattern.findFirstIn(input).isDefined) true else false
+    if (whiteSpacePattern.findFirstIn(input).isDefined|tabSpacePattern.findFirstIn(input).isDefined)
+      true else false
   }
 
  def isSignalLineIgnored(input: String): Boolean = {
