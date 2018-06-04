@@ -7,7 +7,7 @@ class JackAnalyzerTest extends FlatSpec with Matchers {
 
   "runTokenizer" should "" in {
     pending
-    //val x = jackAnalyzer.runTokenizer("/Users/katefulton/Desktop/N2T/compiler/src/main/resources/simpletest.jack")
+    //jackAnalyzer.runTokenizer("/Users/katefulton/Desktop/N2T/compiler/src/main/resources/simpletest.jack")
   }
 
   "createStream" should "" in {

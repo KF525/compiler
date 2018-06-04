@@ -1,5 +1,7 @@
 package kfulton.nand2tetris2.analyzer.tokenizer.tokens
 
+import kfulton.nand2tetris2.analyzer.parser.{CanonicalName, NamedEnum}
+
 trait Token
 
 case class KeywordToken(keywordValue: KeywordValue) extends Token
@@ -35,18 +37,19 @@ case object LessThan extends SymbolValue { val canonical: String = "<" }
 case object GreaterThan extends SymbolValue { val canonical: String = ">" }
 case object Equal extends SymbolValue { val canonical: String = "=" }
 case object Dash extends SymbolValue { val canonical: String = "-" }
+case object Tilda extends SymbolValue { val canonical: String = "~" }
 
 
 object KeywordToken extends NamedEnum[KeywordValue] {
   override def values: Vector[KeywordValue] =
-    Vector(Class, Constructor, Function, Method, Field, Static, Var, True,
+    Vector(Class, ConstructorKey, FunctionKey, MethodKey, Field, Static, Var, True,
       False, Null, This, Let, Do, If, Else, While, Return)
 }
 trait KeywordValue extends CanonicalName
 case object Class extends KeywordValue { val canonical: String = "class" }
-case object Constructor extends KeywordValue { val canonical: String = "constructor" }
-case object Function extends KeywordValue { val canonical: String = "function" }
-case object Method extends KeywordValue { val canonical: String = "method" }
+case object ConstructorKey extends KeywordValue { val canonical: String = "constructor" }
+case object FunctionKey extends KeywordValue { val canonical: String = "function" }
+case object MethodKey extends KeywordValue { val canonical: String = "method" }
 case object Field extends KeywordValue { val canonical: String = "field" }
 case object Static extends KeywordValue { val canonical: String = "static" }
 case object Var extends KeywordValue { val canonical: String = "var" }
@@ -60,14 +63,7 @@ case object If extends KeywordValue { val canonical: String = "if" }
 case object Else extends KeywordValue { val canonical: String = "else" }
 case object While extends KeywordValue { val canonical: String = "while" }
 case object Return extends KeywordValue { val canonical: String = "return" }
-
-trait CanonicalName {
-  val canonical: String
-}
-
-trait NamedEnum[T <: CanonicalName] {
-  def values: Vector[T]
-
-  def forName(name: String): Option[T] =
-    values.find(_.canonical.equalsIgnoreCase(name.trim))
-}
+case object VoidKey extends KeywordValue { val canonical: String = "void"}
+case object IntKey extends KeywordValue { val canonical: String = "int"}
+case object BooleanKey extends KeywordValue { val canonical: String = "boolean"}
+case object CharKey extends KeywordValue { val canonical: String = "char"}
