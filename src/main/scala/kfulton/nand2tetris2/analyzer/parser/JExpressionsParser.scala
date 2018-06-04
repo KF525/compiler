@@ -30,7 +30,9 @@ object JExpressionsParser {
 
   def parseAdditionalJOpTerms(list: List[JOpTerm] = List()): Parser[List[JOpTerm]] =
     for {
-      optionJOpTerm <- parseOption2(parseOpTerm())
+      optionJOpTerm <- parseOption(List(SymbolToken(Plus), SymbolToken(Minus), SymbolToken(Asterisk),
+        SymbolToken(Slash), SymbolToken(Amp), SymbolToken(Pipe), SymbolToken(GreaterThan), SymbolToken(LessThan),
+        SymbolToken(Equal)), parseOpTerm())
       jOpTermList <- optionJOpTerm match {
         case Some(add) => parseAdditionalJOpTerms(list :+ add)
         case None => completedAdditional(list)

@@ -227,24 +227,6 @@ object JParser {
       }
     } yield option
 
-  def parseOption2[T](parseF: Parser[T]): StateT[ParseResultOrError, Tokens, Option[T]] =
-    for {
-      t <- peek()
-      option <- t match {
-        case y if t.equals(SymbolToken(Plus)) => parseSome(parseF)
-        case y if t.equals(SymbolToken(Minus)) => parseSome(parseF)
-        case y if t.equals(SymbolToken(Asterisk)) => parseSome(parseF)
-        case y if t.equals(SymbolToken(Slash)) => parseSome(parseF)
-        case y if t.equals(SymbolToken(Amp)) => parseSome(parseF)
-        case y if t.equals(SymbolToken(Pipe)) => parseSome(parseF)
-        case y if t.equals(SymbolToken(GreaterThan)) => parseSome(parseF)
-        case y if t.equals(SymbolToken(LessThan)) => parseSome(parseF)
-        case y if t.equals(SymbolToken(Equal)) => parseSome(parseF)
-        case n => parseNone()
-      }
-    } yield option
-
-
   private def parseSome[T](parseF: Parser[T]): Parser[Option[T]] =
     for {
       t <- parseF
