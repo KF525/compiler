@@ -4,11 +4,53 @@ import cats.implicits._
 import kfulton.nand2tetris2.analyzer.tokenizer.tokens._
 import org.scalatest.{FlatSpec, Matchers}
 
-class ParserTest extends FlatSpec with Matchers {
+class JParserTest extends FlatSpec with Matchers {
   val parser = JParser
 
   "parseJClasses" should "return new state with List[JClass]" in {
-    pending
+//    val tokens = List(KeywordToken(Class), IdentifierToken("className"), SymbolToken(LeftCurlyBracket),
+//      KeywordToken(Static), KeywordToken(BooleanKey), IdentifierToken("name"), SymbolToken(SemiColon),
+//      KeywordToken(Static), KeywordToken(BooleanKey), IdentifierToken("name"), SymbolToken(SemiColon),
+//      KeywordToken(MethodKey), KeywordToken(BooleanKey), IdentifierToken("subName"),
+//      SymbolToken(LeftParen), KeywordToken(BooleanKey), IdentifierToken("parameter1"),
+//      SymbolToken(RightParen), SymbolToken(LeftCurlyBracket), KeywordToken(Return),
+//      IntToken(4), SymbolToken(SemiColon), SymbolToken(RightCurlyBracket),
+//      KeywordToken(MethodKey), KeywordToken(BooleanKey), IdentifierToken("subName"),
+//      SymbolToken(LeftParen), KeywordToken(BooleanKey), IdentifierToken("parameter1"),
+//      SymbolToken(RightParen), SymbolToken(LeftCurlyBracket), KeywordToken(Return),
+//      IntToken(4), SymbolToken(SemiColon), SymbolToken(RightCurlyBracket), SymbolToken(RightCurlyBracket),
+//      KeywordToken(Class), IdentifierToken("className"), SymbolToken(LeftCurlyBracket),
+//      KeywordToken(Static), KeywordToken(BooleanKey), IdentifierToken("name"), SymbolToken(SemiColon),
+//      KeywordToken(Static), KeywordToken(BooleanKey), IdentifierToken("name"), SymbolToken(SemiColon),
+//      KeywordToken(MethodKey), KeywordToken(BooleanKey), IdentifierToken("subName"),
+//      SymbolToken(LeftParen), KeywordToken(BooleanKey), IdentifierToken("parameter1"),
+//      SymbolToken(RightParen), SymbolToken(LeftCurlyBracket), KeywordToken(Return),
+//      IntToken(4), SymbolToken(SemiColon), SymbolToken(RightCurlyBracket),
+//      KeywordToken(MethodKey), KeywordToken(BooleanKey), IdentifierToken("subName"),
+//      SymbolToken(LeftParen), KeywordToken(BooleanKey), IdentifierToken("parameter1"),
+//      SymbolToken(RightParen), SymbolToken(LeftCurlyBracket), KeywordToken(Return),
+//      IntToken(4), SymbolToken(SemiColon), SymbolToken(RightCurlyBracket), SymbolToken(RightCurlyBracket)
+//    )
+//
+//    val result = parser.parseJClasses().run(tokens)
+//    result shouldBe Right(List(), List(JClass(JName("className"),
+//      List(JClassVarDec(JStatic, JType(JBooleanPrimitiveType), JName("name"), List()),
+//        JClassVarDec(JStatic, JType(JBooleanPrimitiveType), JName("name"), List())),
+//      List( JSubRoutineDec(JMethod, JReturnType(Right(JType(JBooleanPrimitiveType))), JName("subName"),
+//        JParameterList(JParameter(JType(JBooleanPrimitiveType), JName("parameter1")), List()),
+//        JSubRoutineBody(List(), JStatements(List(JReturnStatement(JExpression(JIntegerTerm(4), List())))))),
+//        JSubRoutineDec(JMethod, JReturnType(Right(JType(JBooleanPrimitiveType))), JName("subName"),
+//          JParameterList(JParameter(JType(JBooleanPrimitiveType), JName("parameter1")), List()),
+//          JSubRoutineBody(List(),JStatements(List(JReturnStatement(JExpression(JIntegerTerm(4), List())))))))),
+//      JClass(JName("className"),
+//      List(JClassVarDec(JStatic, JType(JBooleanPrimitiveType), JName("name"), List()),
+//        JClassVarDec(JStatic, JType(JBooleanPrimitiveType), JName("name"), List())),
+//      List( JSubRoutineDec(JMethod, JReturnType(Right(JType(JBooleanPrimitiveType))), JName("subName"),
+//        JParameterList(JParameter(JType(JBooleanPrimitiveType), JName("parameter1")), List()),
+//        JSubRoutineBody(List(), JStatements(List(JReturnStatement(JExpression(JIntegerTerm(4), List())))))),
+//        JSubRoutineDec(JMethod, JReturnType(Right(JType(JBooleanPrimitiveType))), JName("subName"),
+//          JParameterList(JParameter(JType(JBooleanPrimitiveType), JName("parameter1")), List()),
+//          JSubRoutineBody(List(),JStatements(List(JReturnStatement(JExpression(JIntegerTerm(4), List()))))))))))
   }
 
   "parseJClass" should "return new state with JClass" in {
@@ -28,10 +70,10 @@ class ParserTest extends FlatSpec with Matchers {
     result shouldBe Right(List(), JClass(JName("className"),
       List(JClassVarDec(JStatic, JType(JBooleanPrimitiveType), JName("name"), List()),
         JClassVarDec(JStatic, JType(JBooleanPrimitiveType), JName("name"), List())),
-      List( JSubRoutineDec(Method, JReturnType(Right(JType(JBooleanPrimitiveType))), JName("subName"),
+      List( JSubRoutineDec(JMethod, JReturnType(Right(JType(JBooleanPrimitiveType))), JName("subName"),
         JParameterList(JParameter(JType(JBooleanPrimitiveType), JName("parameter1")), List()),
         JSubRoutineBody(List(), JStatements(List(JReturnStatement(JExpression(JIntegerTerm(4), List())))))),
-        JSubRoutineDec(Method, JReturnType(Right(JType(JBooleanPrimitiveType))), JName("subName"),
+        JSubRoutineDec(JMethod, JReturnType(Right(JType(JBooleanPrimitiveType))), JName("subName"),
           JParameterList(JParameter(JType(JBooleanPrimitiveType), JName("parameter1")), List()),
           JSubRoutineBody(List(),JStatements(List(JReturnStatement(JExpression(JIntegerTerm(4), List())))))))))
   }
@@ -88,7 +130,7 @@ class ParserTest extends FlatSpec with Matchers {
 
     val result = parser.parseJSubRoutineDec().run(tokens)
     result shouldBe Right(List(SymbolToken(Equal)),
-      JSubRoutineDec(Method,
+      JSubRoutineDec(JMethod,
       JReturnType(Right(JType(JBooleanPrimitiveType))),
       JName("subName"),
       JParameterList(JParameter(JType(JBooleanPrimitiveType), JName("parameter1")), List()),
@@ -193,12 +235,18 @@ class ParserTest extends FlatSpec with Matchers {
     result shouldBe Left("Expected: a valid IdentifierToken but got: StringToken(string)")
   }
 
-  "peek" should "look at the next token" in {
-    pending
+  "peekOption" should "look at the next token" in {
+    val tokens = List(StringToken("string"))
+
+    val result = parser.peekOption().run(tokens)
+    result shouldBe Right(List(StringToken("string")), Some(StringToken("string")))
   }
 
   it should "handle an empty list" in {
-    pending
+    val tokens = List()
+
+    val result = parser.peekOption().run(tokens)
+    result shouldBe Right(List(), None)
   }
 
   "pop" should "remove and return the next token" in {

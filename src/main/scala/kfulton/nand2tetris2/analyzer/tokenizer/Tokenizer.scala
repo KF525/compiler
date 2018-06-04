@@ -4,28 +4,33 @@ import kfulton.nand2tetris2.analyzer.tokenizer.tokens._
 
 class Tokenizer {
 
-  def advance(lines: Stream[String], tokens: Stream[Either[Token, TokenizerError]] = Stream.empty,
-              insideMultiLineComment: Boolean = false): Stream[Either[Token, TokenizerError]] = {
+  def advance(lines: List[String], tokens: List[Either[Token, TokenizerError]] = List(),
+              insideMultiLineComment: Boolean = false): List[Either[Token, TokenizerError]] = {
     val (finalTokens, _) = lines.foldLeft((tokens, insideMultiLineComment)) {
       (currentTokens, line) =>
         val chars = line.toCharArray.toList
-        val (newTokens, insideMLComment) = tokenizeLine(chars.head.toString, chars.tail, currentTokens._2, currentTokens._1)
-        (Stream.concat(tokens, newTokens), insideMLComment)
+        val (newTokens: List[Either[Token, TokenizerError]], insideMLComment) = tokenizeLine(chars.head.toString, chars.tail, currentTokens._2, currentTokens._1)
+        //(Stream.concat(tokens, newTokens), insideMLComment)
+        (tokens ++ newTokens, insideMLComment)
     }
     finalTokens
   }
 
   def tokenizeLine(current: String, lines: List[Char], insideMLComment: Boolean,
-                   tokens: Stream[Either[Token, TokenizerError]] = Stream.empty): (Stream[Either[Token, TokenizerError]], Boolean) =
+                   tokens: List[Either[Token, TokenizerError]] = List()): (List[Either[Token, TokenizerError]], Boolean) =
     (lines, insideMLComment) match {
       case (Nil, true) => (tokens, insideMLComment)
-      case (Nil, false) if tokenType(current).isLeft => (Stream.concat(tokens, Stream.apply(tokenType(current))), insideMLComment)
+      case (Nil, false) if tokenType(current).isLeft =>
+        val eitherToken= List.apply(tokenType(current))
+        (tokens ++ eitherToken, insideMLComment)
       case (Nil, false) if tokenType(current).isRight => (tokens, insideMLComment)
       case (h :: t, false) if isMultiLineStart(current ++ h.toString) => tokenizeLine(h.toString, t, insideMLComment = true, tokens)
       case (h :: t, false) if isWhiteSpaceIgnored(current) => tokenizeLine(h.toString, t, insideMLComment, tokens)
       case (h :: t, false) if isSignalLineIgnored(current ++ h.toString) => (tokens, insideMLComment)
       case (h :: t, false) if tokenType(current ++ h.toString).isLeft => tokenizeLine(current ++ h.toString, t, insideMLComment, tokens)
-      case (h :: t, false) if tokenType(current).isLeft => tokenizeLine(h.toString, t, insideMLComment, Stream.concat(tokens, Stream.apply(tokenType(current))))
+      case (h :: t, false) if tokenType(current).isLeft =>
+        val eitherToken = List.apply(tokenType(current))
+        tokenizeLine(h.toString, t, insideMLComment, tokens ++ eitherToken)
       case (h :: t, false) if tokenType(current).isRight => tokenizeLine(current ++ h.toString, t, insideMLComment, tokens)
       case (h :: t, false) => tokenizeLine(current ++ h.toString, t, insideMLComment, tokens)
       case (h :: t, true) if isMultiLineClose(current) => tokenizeLine(h.toString, t, insideMLComment = false, tokens)

@@ -1,6 +1,5 @@
 package kfulton.nand2tetris2.analyzer.parser
 
-import cats.data.StateT
 import cats.implicits._
 import kfulton.nand2tetris2.analyzer.parser.JExpressionsParser._
 import kfulton.nand2tetris2.analyzer.parser.JParser.{Parser, _}
@@ -15,32 +14,15 @@ object JStatementsParser {
 
     def parseJStatement(): Parser[JStatement] =
       for {
-        t <- peek()
+        t <- peekOption()
         jStatement <- t match {
-          case KeywordToken(If) => parseJIf()
-          case KeywordToken(Return) => parseJReturn()
-          case KeywordToken(Do) => parseJDo()
-          case KeywordToken(Let) => parseJLet()
-          case KeywordToken(While) => parseJWhile()
+          case Some(KeywordToken(If)) => parseJIf()
+          case Some(KeywordToken(Return)) => parseJReturn()
+          case Some(KeywordToken(Do)) => parseJDo()
+          case Some(KeywordToken(Let)) => parseJLet()
+          case Some(KeywordToken(While)) => parseJWhile()
         }
       } yield jStatement
-
-  def parseOption[T](peekToken: Token, parseF: Parser[T]): StateT[ParseResultOrError, Tokens, Option[T]] =
-    for {
-      t <- peek()
-      option <- t match {
-        case y if t == peekToken => parseSome(parseF)
-        case n => parseNone()
-      }
-    } yield option
-
-  private def parseSome[T](parseF: Parser[T]): Parser[Option[T]] =
-    for {
-      t <- parseF
-    } yield Option(t)
-
-  private def parseNone[T](): Parser[Option[T]]  =
-      StateT[ParseResultOrError, Tokens, Option[T]] { tokens => Right(tokens, None: Option[T]) }
 
   private def parseMaybeJLetExpression(): Parser[JExpression] =
     for {
@@ -61,7 +43,7 @@ object JStatementsParser {
       for {
         _ <- matchToken(KeywordToken(Let))
         name <- parseJName()
-        maybeJExpression <- parseOption[JExpression](SymbolToken(LeftSquareBracket), parseMaybeJLetExpression())
+        maybeJExpression <- parseOption[JExpression](List(SymbolToken(LeftSquareBracket)), parseMaybeJLetExpression())
         _ <- matchToken(SymbolToken(Equal))
         jExpression2 <- parseJExpression()
         _ <- matchToken(SymbolToken(SemiColon))
@@ -76,7 +58,7 @@ object JStatementsParser {
         _ <- matchToken(SymbolToken(LeftCurlyBracket))
         consequence <- parseJStatements()
         _ <- matchToken(SymbolToken(RightCurlyBracket))
-        maybeAlternative <- parseOption[JStatements](KeywordToken(Else), parseMaybeAlternative())
+        maybeAlternative <- parseOption[JStatements](List(KeywordToken(Else)), parseMaybeAlternative())
       } yield JIfStatement(condition, consequence, maybeAlternative)
 
   private  def parseJDo(): Parser[JDoStatement] =

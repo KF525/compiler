@@ -14,7 +14,7 @@ class JackAnalyzer {
   val printer = new XMLPrinter
 
   def runTokenizer(path: String) = {
-    val eitherTokens: Stream[Either[Token, TokenizerError]] = tokenizer.advance(createStream(path))
+    val eitherTokens: List[Either[Token, TokenizerError]] = tokenizer.advance(createList(path))
     val (tokens, failure) = validateTokenStream(eitherTokens)
     if (failure.isEmpty) 3//then parse
 
@@ -22,17 +22,17 @@ class JackAnalyzer {
     //val xml = parser.parseTokens(tokens)
   }
 
-  def validateTokenStream(eitherTokens: Stream[Either[Token, TokenizerError]],
-                          tokens: Stream[Token] = Stream.Empty,
-                          failure: Option[TokenizerError] = None): (Stream[Token], Option[TokenizerError]) =
+  def validateTokenStream(eitherTokens: List[Either[Token, TokenizerError]],
+                          tokens: List[Token] = Nil,
+                          failure: Option[TokenizerError] = None): (List[Token], Option[TokenizerError]) =
     (eitherTokens, failure) match {
       case (_, Some(tokenizerError)) => (tokens, Some(tokenizerError))
-      case (Left(token) #:: t, None) => validateTokenStream(t, token #:: tokens, None)
-      case (Right(tokenizerError) #:: t, None) => validateTokenStream(t, tokens, Some(tokenizerError))
+      case (Left(token) :: t, None) => validateTokenStream(t, token :: tokens, None)
+      case (Right(tokenizerError) :: t, None) => validateTokenStream(t, tokens, Some(tokenizerError))
     }
 
-  def createStream(path: String): Stream[String] = {
+  def createList(path: String): List[String] = {
     val file = new File(path)
-    Source.fromFile(file).getLines().toStream
+    Source.fromFile(file).getLines().toList
   }
 }

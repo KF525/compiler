@@ -2,7 +2,6 @@ package kfulton.nand2tetris2.analyzer.parser
 
 import cats.data.StateT
 import cats.implicits._
-import kfulton.nand2tetris2.analyzer.parser.JExpressionsParser.completedAdditional
 import kfulton.nand2tetris2.analyzer.parser.JStatementsParser._
 import kfulton.nand2tetris2.analyzer.tokenizer.tokens._
 
@@ -12,9 +11,13 @@ object JParser {
   type ParseResultOrError[T] = Either[String, T]
   type Parser[T] = StateT[ParseResultOrError, Tokens, T]
 
-  def parseJProgram() = ??? // This is the entry
+  def parseJProgram(tokens: List[Token]) = parseJClasses().run(tokens)
 
   def parseJClasses(): Parser[List[JClass]] = ???
+//    for {
+//      jClass <- parseJClass()
+//      additionalJClasses <- parseAdditional[JClass](List(KeywordToken(Class)), parseJClass())
+//    } yield additionalJClasses
 
   def parseJClass() =
     for {
@@ -49,7 +52,7 @@ object JParser {
      jClassVar <- parseClassVar()
      jType <- parseJType()
      jName <- parseJName()
-     additional <- parseAdditionalJNames()
+     additional <- parseAdditional[JName](List(SymbolToken(Comma)), parseAdditionalJName())
       _ <- matchToken(SymbolToken(SemiColon))
     } yield JClassVarDec(jClassVar, jType, jName, additional)
 
@@ -60,15 +63,6 @@ object JParser {
       case t :: remainder => Left(s"Expected: a valid JClassVar Token but got: $t")
       case _ => Left(s"Expected: an JClassVar Token but reached end")
     }
-
-  def parseAdditionalJNames(list: List[JName] = List()): Parser[List[JName]] =
-    for {
-      optionJParameter <- parseOption(SymbolToken(Comma), parseAdditionalJName())
-      jParameterList <- optionJParameter match {
-        case Some(add) => parseAdditionalJNames(list :+ add)
-        case None => completedAdditional(list)
-      }
-    } yield jParameterList
 
   def parseAdditionalJName() =
     for {
@@ -99,9 +93,9 @@ object JParser {
 
   def parsesubRoutineDecType() =
     StateT[ParseResultOrError, Tokens, JSubRoutineType] {
-      case KeywordToken(MethodKey) :: remainder => Right((remainder, Method))
-      case KeywordToken(FunctionKey) :: remainder => Right((remainder, Function))
-      case KeywordToken(ConstructorKey) :: remainder => Right((remainder, Constructor))
+      case KeywordToken(MethodKey) :: remainder => Right((remainder, JMethod))
+      case KeywordToken(FunctionKey) :: remainder => Right((remainder, JFunction))
+      case KeywordToken(ConstructorKey) :: remainder => Right((remainder, JConstructor))
       case t :: remainder => Left(s"Expected: a valid JSubRoutineType Token but got: $t")
       case _ => Left(s"Expected: a JSubRoutineType Token but reached end")
     }
@@ -112,12 +106,14 @@ object JParser {
       case KeywordToken(IntKey) :: remainder => Right((remainder, JReturnType(Right(JType(JIntPrimitiveType)))))
       case KeywordToken(CharKey) :: remainder => Right((remainder, JReturnType(Right(JType(JCharPrimitiveType)))))
       case KeywordToken(VoidKey) :: remainder => Right((remainder, JReturnType(Left(JVoid()))))
+      case t :: remainder => Left(s"Expected: a valid JReturnType Token but got: $t")
+      case _ => Left(s"Expected: a JReturnType Token but reached end")
     }
 
   def parseJParameterList() =
     for {
       parameter <- parseJParameter()
-      additional <- parseAdditionalJParameters()
+      additional <- parseAdditional[JParameter](List(SymbolToken(Comma)), parseAdditionalJParameter())
     } yield JParameterList(parameter, additional)
 
   def parseJParameter(): Parser[JParameter] =
@@ -133,49 +129,21 @@ object JParser {
       jName <- parseJName()
     } yield JParameter(jType, jName)
 
-  private def parseAdditionalJParameters(list: List[JParameter] = List()): Parser[List[JParameter]] =
-    for {
-      optionJParameter <- parseOption(SymbolToken(Comma), parseAdditionalJParameter())
-      jParameterList <- optionJParameter match {
-        case Some(add) => parseAdditionalJParameters(list :+ add)
-        case None => completedAdditional(list)
-      }
-    } yield jParameterList
-
   def parseJSubRoutineBody() =
     for {
      _ <- matchToken(SymbolToken(LeftCurlyBracket))
-     varDecList <- parseAdditionalJVarDecs()
+     varDecList <- parseAdditional[JVarDec](List(KeywordToken(Var)), parseJVarDec(), List[JVarDec]())//parseAdditionalJVarDecs()
      statements <- parseJStatements()
      _ <- matchToken(SymbolToken(RightCurlyBracket))
     } yield JSubRoutineBody(varDecList, statements)
-
-  private def parseAdditionalJVarDecs(list: List[JVarDec] = List()): Parser[List[JVarDec]] =
-    for {
-      optionJVarDec <- parseOption(KeywordToken(Var), parseJVarDec())
-      jVarDecList <- optionJVarDec match {
-        case Some(add) => parseAdditionalJVarDecs(list :+ add)
-        case None => completedAdditional(list)
-      }
-    } yield jVarDecList
-
 
   def parseJVarDec() =
     for {
       _ <- matchToken(KeywordToken(Var))
       jType <- parseJType()
       name <- parseJName()
-      additional <- parseAdditionalJVars()
+      additional <- parseAdditional[JName](List(SymbolToken(Comma)), parseJVarName(), List[JName]()) //parseAdditionalJVars()
     } yield JVarDec(jType, name, additional)
-
-  private def parseAdditionalJVars(list: List[JName] = List()): Parser[List[JName]] =
-    for {
-      optionJVar <- parseOption(SymbolToken(Comma), parseJVarName())
-      jVarList <- optionJVar match {
-        case Some(add) => parseAdditionalJVars(list :+ add)
-        case None => completedAdditional(list)
-      }
-    } yield jVarList
 
   private def parseJVarName(): Parser[JName] =
     for {
@@ -197,32 +165,33 @@ object JParser {
       case _ => Left(s"Expected: $expected but reached end")
     }
 
-  def peekOption(): StateT[ParseResultOrError, Tokens, Option[Token]] =
-    StateT[ParseResultOrError, Tokens, Option[Token]]{ s => Right((s, s.headOption)) }
+    //TODO: check if we have a complete Class
+  def parseAdditional[T](peekTokens: List[Token], parseF: Parser[T], list: List[T] = List()): Parser[List[T]] =
+    for {
+      optionT <- parseOption(peekTokens, parseF)
+      tList <- optionT match {
+        case Some(t) => parseAdditional[T](peekTokens, parseF, list :+ t)
+        case None => completedAdditional(list)
+      }
+    } yield tList
 
-  def peek(): StateT[ParseResultOrError, Tokens, Token] =
-    StateT[ParseResultOrError, Tokens, Token]{ s => Right((s, s.head)) }
+  def completedAdditional[T](list: List[T]): StateT[ParseResultOrError, Tokens, List[T]] =
+    StateT[ParseResultOrError, Tokens, List[T]]{tokens => Right(tokens, list) }
+
+  def peekOption(): StateT[ParseResultOrError, Tokens, Option[Token]] =
+    StateT[ParseResultOrError, Tokens, Option[Token]]{ tokens => Right((tokens, tokens.headOption)) }
 
   def removeToken(): StateT[ParseResultOrError, Tokens, Unit] =
-    StateT[ParseResultOrError, Tokens, Unit]{ s => Right((s.tail, ())) }
+    StateT[ParseResultOrError, Tokens, Unit]{ tokens => Right((tokens.tail, ())) }
 
   def pop(): StateT[ParseResultOrError, Tokens, Token] =
-    StateT[ParseResultOrError, Tokens, Token] { s => Right((s.tail, s.head)) }
-
-  def parseOption[T](peekToken: Token, parseF: Parser[T]): StateT[ParseResultOrError, Tokens, Option[T]] =
-    for {
-      t <- peek()
-      option <- t match {
-        case y if t == peekToken => parseSome(parseF)
-        case n => parseNone()
-      }
-    } yield option
+    StateT[ParseResultOrError, Tokens, Token] { tokens => Right((tokens.tail, tokens.head)) }
 
   def parseOption[T](peekTokens: List[Token], parseF: Parser[T]): StateT[ParseResultOrError, Tokens, Option[T]] =
     for {
-      t <- peek()
+      t <- peekOption()
       option <- t match {
-        case y if peekTokens.contains(t) => parseSome(parseF)
+        case y if t.isDefined && peekTokens.contains(t.get) => parseSome(parseF)
         case n => parseNone()
       }
     } yield option

@@ -167,6 +167,6 @@ class JExpressionsParserTest extends FlatSpec with Matchers {
 
     val result = parser.parseJExpressionList().run(tokens)
     result shouldBe Right((List(KeywordToken(Var)),
-    JExpressionList(JExpression(JIntegerTerm(6), List(JOpTerm(JMinus, JIntegerTerm(3)))), List(AdditionalJExpression(JExpression(JIntegerTerm(5), List(JOpTerm(JPlus, JIntegerTerm(5)))))))))
+    JExpressionList(JExpression(JIntegerTerm(6), List(JOpTerm(JMinus, JIntegerTerm(3)))), List(JExpression(JIntegerTerm(5), List(JOpTerm(JPlus, JIntegerTerm(5))))))))
   }
 }

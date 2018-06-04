@@ -7,7 +7,7 @@ class TokenizerTest extends FlatSpec with Matchers {
   val tokenizer = new Tokenizer
 
   "advance" should "find the next token and return token type" in {
-    val program = "class {" #:: "return }" #:: Stream.empty
+    val program = "class {" :: "return }" :: Nil
     val tokens = tokenizer.advance(program)
     tokens.size shouldBe 4
     tokens.head.isLeft shouldBe true
@@ -18,7 +18,7 @@ class TokenizerTest extends FlatSpec with Matchers {
   }
 
   it should "handle multiple lines with different token types" in {
-    val program = "class Point {" #:: " method int getx() {" #:: "return x;}}" #:: Stream.empty
+    val program = "class Point {" :: " method int getx() {" :: "return x;}}" :: Nil
     val tokens = tokenizer.advance(program)
     tokens.head shouldBe Left(KeywordToken(Class))
     tokens.tail.head shouldBe Left(IdentifierToken("Point"))
@@ -37,26 +37,26 @@ class TokenizerTest extends FlatSpec with Matchers {
   }
 
   it should "handle single line comments" in {
-    val program = "class {" #:: "// This is a comment" #:: "return }" #:: Stream.empty
+    val program = "class {" :: "// This is a comment" :: "return }" :: Nil
     val tokens = tokenizer.advance(program)
     tokens.size shouldBe 4
   }
 
   it should "handle multiline comments" in {
-    val program = "class { " #:: "/* This" #:: "class should not count */ return } " #:: Stream.empty
+    val program = "class { " :: "/* This" :: "class should not count */ return } " :: Nil
     val tokens = tokenizer.advance(program)
     tokens.size shouldBe 4
   }
 
   it should "handle multiple white space" in {
-    val program = "  class" #:: " \"tab\"" #:: Stream.empty
+    val program = "  class" :: " \"tab\"" :: Nil
     val tokens = tokenizer.advance(program)
     tokens.size shouldBe 2
   }
 
   //TODO: How do we want to fail? Right now as soon as we hit an invalid token, nothing else gets written.
   it should "return a TokenizerError if it cannot find a valid token" in {
-    val programWithInvalid = "class %" #:: Stream.empty
+    val programWithInvalid = "class %" :: Nil
     val tokens = tokenizer.advance(programWithInvalid)
     tokens.size shouldBe 1
     tokens.head shouldBe Left(KeywordToken(Class))

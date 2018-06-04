@@ -10,44 +10,25 @@ object JExpressionsParser {
   def parseJExpression(): Parser[JExpression] =
     for {
       jTerm <- parseJTerm()
-      additional <- parseAdditionalJOpTerms()
+      additional <- parseAdditional[JOpTerm](List(SymbolToken(Plus), SymbolToken(Minus), SymbolToken(Asterisk),
+        SymbolToken(Slash), SymbolToken(Amp), SymbolToken(Pipe), SymbolToken(GreaterThan), SymbolToken(LessThan),
+        SymbolToken(Equal)), parseOpTerm())
     } yield JExpression(jTerm, additional)
 
   def parseJExpressionList(): Parser[JExpressionList] =
     for {
       expression <- parseJExpression()
-      additional <- parseAdditionalJExpressions()
+      additional <- parseAdditional[JExpression](List(SymbolToken(Comma)), parseMultipleJExpressions())
     } yield JExpressionList(expression, additional)
-
-  private def parseAdditionalJExpressions(list: List[AdditionalJExpression] = List()): Parser[List[AdditionalJExpression]] =
-    for {
-      optionJExpression <- parseOption(SymbolToken(Comma), parseMultipleJExpressions())
-      jExpressionList <- optionJExpression match {
-        case Some(add) => parseAdditionalJExpressions(list :+ AdditionalJExpression(add))
-        case None => completedAdditional(list)
-      }
-    } yield jExpressionList
-
-  def parseAdditionalJOpTerms(list: List[JOpTerm] = List()): Parser[List[JOpTerm]] =
-    for {
-      optionJOpTerm <- parseOption(List(SymbolToken(Plus), SymbolToken(Minus), SymbolToken(Asterisk),
-        SymbolToken(Slash), SymbolToken(Amp), SymbolToken(Pipe), SymbolToken(GreaterThan), SymbolToken(LessThan),
-        SymbolToken(Equal)), parseOpTerm())
-      jOpTermList <- optionJOpTerm match {
-        case Some(add) => parseAdditionalJOpTerms(list :+ add)
-        case None => completedAdditional(list)
-      }
-    } yield jOpTermList
 
   private def parseMultipleJExpressions(): Parser[JExpression] =
     for {
       _ <- matchToken(SymbolToken(Comma))
       jTerm <- parseJTerm()
-      additional <- parseAdditionalJOpTerms()
+      additional <- parseAdditional[JOpTerm](List(SymbolToken(Plus), SymbolToken(Minus), SymbolToken(Asterisk),
+        SymbolToken(Slash), SymbolToken(Amp), SymbolToken(Pipe), SymbolToken(GreaterThan), SymbolToken(LessThan),
+        SymbolToken(Equal)), parseOpTerm())
     } yield JExpression(jTerm, additional)
-
-  def completedAdditional[T](list: List[T]): StateT[ParseResultOrError, Tokens, List[T]] =
-    StateT[ParseResultOrError, Tokens, List[T]]{tokens => Right(tokens, list) }
 
   private def parseOpTerm() =
     for {
@@ -57,16 +38,84 @@ object JExpressionsParser {
 
   def parseJTerm(): Parser[JTerm] =
     for {
-      t <- peek()
+      t <- peekOption()
       jTerm <- t match {
-        case IntToken(i) => parseJIntegerTerm()
-        case StringToken(s) => parseJStringTerm()
-        case KeywordToken(k) => parseJKeywordTerm()
-        case SymbolToken(LeftParen) => parseJExpressionTerm()
-        case SymbolToken(sy) => parseJUnaryOpTerm()
-        case IdentifierToken(id) => parseIdentifierTerms()
+        case Some(IntToken(i)) => parseJIntegerTerm()
+        case Some(StringToken(s)) => parseJStringTerm()
+        case Some(KeywordToken(k)) => parseJKeywordTerm()
+        case Some(SymbolToken(LeftParen)) => parseJExpressionTerm()
+        case Some(SymbolToken(sy)) => parseJUnaryOpTerm()
+        case Some(IdentifierToken(id)) => parseIdentifierTerms()
       }
     } yield jTerm
+
+  private def parseJExpressionTerm(): Parser[JExpressionTerm] =
+    for {
+      _ <- matchToken(SymbolToken(LeftParen))
+      jExpression <- parseJExpression()
+      _ <- matchToken(SymbolToken(RightParen))
+    } yield JExpressionTerm(jExpression)
+
+  private def parseIdentifierTerms(): Parser[JTerm] =
+    for {
+      name <- parseJName()
+      t <- peekOption()
+      jTerm <- t match {
+        case Some(subBare) if subBare.equals(SymbolToken(LeftParen)) => parseJSubRoutineExpressionTerm(name)
+        case Some(subClass) if subClass.equals(SymbolToken(Period)) => parseJSubRoutineExpressionTerm(name)
+        case _ => parseJVarNameWithOptionalExpressionTerm(name)
+      }
+    } yield jTerm
+
+  private def parseJVarNameWithOptionalExpressionTerm(name: JName): Parser[JVarNameWithOptionalExpressionTerm] =
+    for {
+      t <- peekOption()
+      optionJExpression <- parseOption[JExpression](List(SymbolToken(LeftSquareBracket)), parseOptionalJExpression())
+    } yield JVarNameWithOptionalExpressionTerm(name, optionJExpression)
+
+  private def parseOptionalJExpression() =
+    for {
+      _ <- matchToken(SymbolToken(LeftSquareBracket))
+      jExpression <- parseJExpression()
+      _ <- matchToken(SymbolToken(RightSquareBracket))
+    } yield jExpression
+
+  private def parseJUnaryOpTerm(): Parser[JUnaryOpTerm] = {
+    for {
+      unary <- parseJUnaryOp()
+      jterm <- parseJTerm()
+    } yield JUnaryOpTerm(unary, jterm)
+  }
+
+  private def parseJSubRoutineExpressionTerm(name: JName): Parser[JSubRoutineExpressionTerm] =
+    for {
+      subroutine <- parseJSubRoutineCallType(name)
+    } yield JSubRoutineExpressionTerm(subroutine)
+
+  def parseJSubRoutineCallType(name: JName): Parser[JSubRoutineCallType] =
+    for {
+      t <- peekOption()
+      subroutine <- t match {
+        case Some(subBare) if subBare.equals(SymbolToken(LeftParen)) => parseJBareSubRoutineCall(name)
+        case _ => parseJClassSubRoutineCall(name)
+      }
+    } yield subroutine
+
+  private def parseJBareSubRoutineCall(name: JName): Parser[JBareSubRoutineCall] =
+      for {
+        _ <- matchToken(SymbolToken(LeftParen))
+        jExpressionList <- parseJExpressionList()
+        _ <- matchToken(SymbolToken(RightParen))
+      } yield JBareSubRoutineCall(name, JExpressionList(JExpression(JIntegerTerm(4), List()), List()))
+
+  private def parseJClassSubRoutineCall(name: JName) =
+    for {
+      _ <- matchToken(SymbolToken(Period))
+      name2 <- parseJName()
+      _ <- matchToken(SymbolToken(LeftParen))
+      jExpression <- parseJExpressionList()
+      _ <- matchToken(SymbolToken(RightParen))
+    } yield JClassSubroutineCall(name, name2, jExpression)
 
   private def parseJIntegerTerm(): Parser[JIntegerTerm] =
     StateT[ParseResultOrError, Tokens, JIntegerTerm] {
@@ -92,44 +141,6 @@ object JExpressionsParser {
       case _ => Left(s"Expected: an KeywordToken but reached end")
     }
 
-  private def parseJExpressionTerm(): Parser[JExpressionTerm] =
-    for {
-      _ <- matchToken(SymbolToken(LeftParen))
-      jExpression <- parseJExpression()
-      _ <- matchToken(SymbolToken(RightParen))
-    } yield JExpressionTerm(jExpression)
-
-  private def parseIdentifierTerms(): Parser[JTerm] =
-    for {
-      name <- parseJName()
-      t <- peek()
-      jTerm <- t match {
-        case subBare if t.equals(SymbolToken(LeftParen)) => parseJSubRoutineExpressionTerm(name)
-        case subClass if t.equals(SymbolToken(Period)) => parseJSubRoutineExpressionTerm(name)
-        case _ => parseJVarNameWithOptionalExpressionTerm(name)
-      }
-    } yield jTerm
-
-  private def parseJVarNameWithOptionalExpressionTerm(name: JName): Parser[JVarNameWithOptionalExpressionTerm] =
-    for {
-      t <- peek()
-      optionJExpression <- parseOption(SymbolToken(LeftSquareBracket), parseOptionalJExpression())
-    } yield JVarNameWithOptionalExpressionTerm(name, optionJExpression)
-
-  private def parseOptionalJExpression() =
-    for {
-      _ <- matchToken(SymbolToken(LeftSquareBracket))
-      jExpression <- parseJExpression()
-      _ <- matchToken(SymbolToken(RightSquareBracket))
-    } yield jExpression
-
-  private def parseJUnaryOpTerm(): Parser[JUnaryOpTerm] = {
-    for {
-      unary <- parseJUnaryOp()
-      jterm <- parseJTerm()
-    } yield JUnaryOpTerm(unary, jterm)
-  }
-
   private def parseJUnaryOp() =
     StateT[ParseResultOrError, Tokens, JUnaryOp] {
       case SymbolToken(Dash) :: remainder => Right((remainder, JDash))
@@ -137,36 +148,6 @@ object JExpressionsParser {
       case t :: remainder => Left(s"Expected: a valid SymbolToken but got: $t")
       case _ => Left(s"Expected: an StringToken but reached end")
     }
-
-  private def parseJSubRoutineExpressionTerm(name: JName): Parser[JSubRoutineExpressionTerm] =
-    for {
-      subroutine <- parseJSubRoutineCallType(name)
-    } yield JSubRoutineExpressionTerm(subroutine)
-
-  def parseJSubRoutineCallType(name: JName): Parser[JSubRoutineCallType] =
-    for {
-      t <- peek()
-      subroutine <- t match {
-        case subBare if t.equals(SymbolToken(LeftParen)) => parseJBareSubRoutineCall(name)
-        case _ => parseJClassSubRoutineCall(name)
-      }
-    } yield subroutine
-
-  private def parseJBareSubRoutineCall(name: JName): Parser[JBareSubRoutineCall] =
-      for {
-        _ <- matchToken(SymbolToken(LeftParen))
-        jExpressionList <- parseJExpressionList()
-        _ <- matchToken(SymbolToken(RightParen))
-      } yield JBareSubRoutineCall(name, JExpressionList(JExpression(JIntegerTerm(4), List()), List()))
-
-  private def parseJClassSubRoutineCall(name: JName) =
-    for {
-      _ <- matchToken(SymbolToken(Period))
-      name2 <- parseJName()
-      _ <- matchToken(SymbolToken(LeftParen))
-      jExpression <- parseJExpressionList()
-      _ <- matchToken(SymbolToken(RightParen))
-    } yield JClassSubroutineCall(name, name2, jExpression)
 
   def parseOp(): Parser[JOp] =
     StateT[ParseResultOrError, Tokens, JOp] {
