@@ -43,7 +43,7 @@ case object Tilda extends SymbolValue { val canonical: String = "~" }
 object KeywordToken extends NamedEnum[KeywordValue] {
   override def values: Vector[KeywordValue] =
     Vector(Class, ConstructorKey, FunctionKey, MethodKey, Field, Static, Var, True,
-      False, Null, This, Let, Do, If, Else, While, Return)
+      False, Null, This, Let, Do, If, Else, While, Return, IntKey, BooleanKey, CharKey)
 }
 trait KeywordValue extends CanonicalName
 case object Class extends KeywordValue { val canonical: String = "class" }

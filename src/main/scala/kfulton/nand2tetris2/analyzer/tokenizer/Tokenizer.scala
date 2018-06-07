@@ -95,7 +95,8 @@ class Tokenizer {
     }
   }
 
-  private def isKeyword(input: String) = KeywordToken.forName(input).isDefined
+  private def isKeyword(input: String) =
+    KeywordToken.forName(input).isDefined
 
   private def getKeywordToken(maybeKeyword: Option[KeywordValue]): Either[KeywordToken, TokenizerError] = {
     maybeKeyword match {

@@ -24,7 +24,7 @@ class TokenizerTest extends FlatSpec with Matchers {
     tokens.tail.head shouldBe Left(IdentifierToken("Point"))
     tokens.tail.tail.head shouldBe Left(SymbolToken(LeftCurlyBracket))
     tokens.tail.tail.tail.head shouldBe Left(KeywordToken(MethodKey))
-    tokens.tail.tail.tail.tail.head shouldBe Left(IdentifierToken("int"))
+    tokens.tail.tail.tail.tail.head shouldBe Left(KeywordToken(IntKey))
     tokens.tail.tail.tail.tail.tail.head shouldBe Left(IdentifierToken("getx"))
     tokens.tail.tail.tail.tail.tail.tail.head shouldBe Left(SymbolToken(LeftParen))
     tokens.tail.tail.tail.tail.tail.tail.tail.head shouldBe Left(SymbolToken(RightParen))

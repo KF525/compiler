@@ -7,7 +7,6 @@ import kfulton.nand2tetris2.analyzer.tokenizer.tokens._
 
 object JParser {
   type Tokens = List[Token]
-
   type ParseResultOrError[T] = Either[String, T]
   type Parser[T] = StateT[ParseResultOrError, Tokens, T]
 
@@ -16,7 +15,7 @@ object JParser {
   def parseJClasses(): Parser[List[JClass]] =
     for {
       jClass <- parseJClass()
-      additionalJClasses <- parseAdditional[JClass](List(KeywordToken(Class)), parseJClass(), true)
+      additionalJClasses <- parseAdditional[JClass](List(KeywordToken(Class)), parseJClass())
    } yield jClass +: additionalJClasses
 
   def parseJClass() =
@@ -24,7 +23,7 @@ object JParser {
       _ <- matchToken(KeywordToken(Class))
       jName <- parseJName()
       _ <- matchToken(SymbolToken(LeftCurlyBracket))
-      jClassVarDec <- parseJClassVarDecList(List(KeywordToken(Static), KeywordToken(Field)))
+      jClassVarDec <- parseJClassVarDecList(List(KeywordToken(Static), KeywordToken(Field))) //TODO: IdentifierToken
       jSubRoutineDec <- parseJSubRoutineDecList(List(KeywordToken(ConstructorKey), KeywordToken(FunctionKey), KeywordToken(MethodKey)))
       _ <- matchToken(SymbolToken(RightCurlyBracket))
     } yield JClass(jName, jClassVarDec, jSubRoutineDec)
@@ -86,7 +85,7 @@ object JParser {
       jReturnType <- parseJReturnType()
       name <- parseJName()
       _ <- matchToken(SymbolToken(LeftParen))
-      parameterList <- parseJParameterList()
+      parameterList <- parseJParameterList(List(KeywordToken(CharKey), KeywordToken(BooleanKey), KeywordToken(IntKey)), parseJParameter())
       _ <- matchToken(SymbolToken(RightParen))
       jSubRoutineBody <- parseJSubRoutineBody()
     } yield JSubRoutineDec(jSubRoutineType, jReturnType, name, parameterList, jSubRoutineBody)
@@ -110,11 +109,10 @@ object JParser {
       case _ => Left(s"Expected: a JReturnType Token but reached end")
     }
 
-  def parseJParameterList() =
+  def parseJParameterList(peekTokens: List[Token], parseF: Parser[JParameter]): Parser[List[JParameter]] =
     for {
-      parameter <- parseJParameter()
-      additional <- parseAdditional[JParameter](List(SymbolToken(Comma)), parseAdditionalJParameter())
-    } yield JParameterList(parameter, additional)
+     jParameterList <- parseDelimitedList[JParameter](peekTokens, parseF)
+    } yield jParameterList
 
   def parseJParameter(): Parser[JParameter] =
     for {
@@ -122,17 +120,10 @@ object JParser {
       jName <- parseJName()
     } yield JParameter(jType, jName)
 
-  def parseAdditionalJParameter(): Parser[JParameter] =
-    for {
-      _  <- matchToken(SymbolToken(Comma))
-      jType <- parseJType()
-      jName <- parseJName()
-    } yield JParameter(jType, jName)
-
   def parseJSubRoutineBody() =
     for {
      _ <- matchToken(SymbolToken(LeftCurlyBracket))
-     varDecList <- parseAdditional[JVarDec](List(KeywordToken(Var)), parseJVarDec())//parseAdditionalJVarDecs()
+     varDecList <- parseAdditional[JVarDec](List(KeywordToken(Var)), parseJVarDec())
      statements <- parseJStatements()
      _ <- matchToken(SymbolToken(RightCurlyBracket))
     } yield JSubRoutineBody(varDecList, statements)
@@ -142,7 +133,7 @@ object JParser {
       _ <- matchToken(KeywordToken(Var))
       jType <- parseJType()
       name <- parseJName()
-      additional <- parseAdditional[JName](List(SymbolToken(Comma)), parseJVarName()) //parseAdditionalJVars()
+      additional <- parseAdditional[JName](List(SymbolToken(Comma)), parseJVarName())
     } yield JVarDec(jType, name, additional)
 
   private def parseJVarName(): Parser[JName] =
@@ -165,11 +156,43 @@ object JParser {
       case _ => Left(s"Expected: $expected but reached end")
     }
 
-  def parseAdditional[T](peekTokens: List[Token], parseF: Parser[T], isJClass: Boolean = false, list: List[T] = List()): Parser[List[T]] =
+  def parseDelimitedList[T](peekTokens: List[Token], parseF: Parser[T], delimiter: Token = SymbolToken(Comma),
+                            list: List[T] = List()): Parser[List[T]] =
+    for {
+      optionT <- parseOption(peekTokens, parseF, true)
+      tList <- optionT match {
+        case Some(t) => parseDelimitedRemainingList(peekTokens, delimiter, parseF, t +:list)
+        case None => completedAdditional(list)
+      }
+    } yield tList
+
+  def parseDelimitedRemainingList[T](peekTokens: List[Token], delimiter: Token = SymbolToken(Comma),
+                                     parseF: Parser[T], list: List[T]): Parser[List[T]] =
+    for {
+      t <- peekOption()
+      jList <- t match {
+        case Some(t) if t.equals(delimiter) => getNextInList(peekTokens, delimiter, parseF, list)
+        case Some(t) => completedAdditional(list)
+        case None => completedAdditional(list)
+      }
+    } yield jList
+
+   def getNextInList[T](peekTokens: List[Token], delimiter: Token = SymbolToken(Comma),
+      parseF: Parser[T], list: List[T]): Parser[List[T]] =
+     for {
+      _ <- matchToken(delimiter)
+      optionT <- parseOption(peekTokens, parseF, true)
+      tList <- optionT match {
+        case Some(t) => parseDelimitedRemainingList(peekTokens, delimiter, parseF, list :+ t)
+        case None => completedAdditional(list)
+      }
+    } yield tList
+
+  def parseAdditional[T](peekTokens: List[Token], parseF: Parser[T], list: List[T] = List()): Parser[List[T]] =
     for {
       optionT <- parseOption(peekTokens, parseF)
       tList <- optionT match {
-        case Some(t) => parseAdditional[T](peekTokens, parseF, isJClass, list :+ t)
+        case Some(t) => parseAdditional[T](peekTokens, parseF, list :+ t)
         case None => completedAdditional(list)
       }
     } yield tList
@@ -186,11 +209,11 @@ object JParser {
   def pop(): StateT[ParseResultOrError, Tokens, Token] =
     StateT[ParseResultOrError, Tokens, Token] { tokens => Right((tokens.tail, tokens.head)) }
 
-  def parseOption[T](peekTokens: List[Token], parseF: Parser[T]): StateT[ParseResultOrError, Tokens, Option[T]] =
+  def parseOption[T](peekTokens: List[Token], parseF: Parser[T], peekIncludesIdentifiers: Boolean = false): StateT[ParseResultOrError, Tokens, Option[T]] =
     for {
       t <- peekOption()
       option <- t match {
-        case y if t.isDefined && peekTokens.contains(t.get) => parseSome(parseF)
+        case y if t.isDefined && (peekTokens.contains(t.get) || (peekIncludesIdentifiers && t.get.isInstanceOf[IdentifierToken])) => parseSome(parseF)
         case n => parseNone()
       }
     } yield option

@@ -2,7 +2,8 @@ package kfulton.nand2tetris2.analyzer
 
 import java.io.File
 
-import kfulton.nand2tetris2.analyzer.parser.JParser
+import kfulton.nand2tetris2.analyzer.parser.{JClass, JParser}
+import kfulton.nand2tetris2.analyzer.parser.JParser.{ParseResultOrError, Tokens}
 import kfulton.nand2tetris2.analyzer.printer.XMLPrinter
 import kfulton.nand2tetris2.analyzer.tokenizer.Tokenizer
 import kfulton.nand2tetris2.analyzer.tokenizer.tokens.{Token, TokenizerError}
@@ -14,9 +15,11 @@ class JackAnalyzer {
   val parser = JParser
   val printer = new XMLPrinter
 
-  def runTokenizer(path: String) = {
+  def runAnalyzer(path: String) = {
     val eitherTokens: List[Either[Token, TokenizerError]] = tokenizer.advance(program(path))
     val (tokens, failure) = validateTokens(eitherTokens)
+    val x: ParseResultOrError[(Tokens, List[JClass])] = parser.parseJProgram(tokens)
+    x
 
    // val x = if (failure.isEmpty) parser.parseJProgram(tokens) else
 
@@ -29,8 +32,9 @@ class JackAnalyzer {
                      tokens: List[Token] = List(),
                      failure: Option[TokenizerError] = None): (List[Token], Option[TokenizerError]) =
     (eitherTokens, failure) match {
+      case (Nil, None) => (tokens, None)
       case (_, Some(tokenizerError)) => (tokens, Some(tokenizerError))
-      case (Left(token) :: t, None) => validateTokens(t, token :: tokens, None)
+      case (Left(token) :: t, None) => validateTokens(t, tokens :+ token, None)
       case (Right(tokenizerError) :: t, None) => validateTokens(t, tokens, Some(tokenizerError))
     }
 

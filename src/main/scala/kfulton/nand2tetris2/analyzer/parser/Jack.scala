@@ -9,7 +9,7 @@ case class JClass(jName: JName, jClassVarDecList: List[JClassVarDec],
                   jSubRoutineDecList: List[JSubRoutineDec]) extends Jack
 case class JSubRoutineBody(jVarDecList: List[JVarDec], statements: JStatements) extends Jack
 case class JSubRoutineDec(jSubRoutineType: JSubRoutineType, jReturnType: JReturnType, jSubroutineName: JName,
-                          parameterList: JParameterList, jSubRoutineBody: JSubRoutineBody) extends Jack
+                          parameterList: List[JParameter], jSubRoutineBody: JSubRoutineBody) extends Jack
 
 case class JName(name: String) extends Jack
 case class JVoid() extends Jack
@@ -22,8 +22,6 @@ case object JFunction extends JSubRoutineType
 
 case class JClassVarDec(jClassVar: JClassVar, jType: JType, jName: JName, additionalJVar: List[JName]) extends Jack
 case class JVarDec(jType: JType, jName: JName, additionalJVar: List[JName] = Nil) extends Jack
-case class JParameter(jType: JType, jName: JName)
-case class JParameterList(jParameter: JParameter, addtionalJParameters: List[JParameter]) extends Jack
 
 sealed trait JClassVar extends Jack
 case object JStatic extends JClassVar
@@ -36,6 +34,9 @@ case object JCharPrimitiveType extends JPrimitiveType
 case object JBooleanPrimitiveType extends JPrimitiveType
 case class JClassNameType(id: String) extends JPrimitiveType
 
+case class JParameter(jType: JType, jName: JName)
+//TODO: The first jParameter   is optional...
+case class JParameterList(jParameters: List[JParameter]) extends Jack
 case class JExpression(term: JTerm, additional: List[JOpTerm]) extends Jack
 //TODO: The first expression is optional...
 case class JExpressionList(expression: JExpression, additionalJExpression: List[JExpression]) extends Jack

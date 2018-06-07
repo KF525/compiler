@@ -47,9 +47,9 @@ class JParserTest extends FlatSpec with Matchers {
     result shouldBe Right(
       (List(),
         List(
-          JClass(JName("className1"),List(JClassVarDec(JStatic,JType(JBooleanPrimitiveType),JName("name1"),List()), JClassVarDec(JStatic,JType(JBooleanPrimitiveType),JName("name1"),List())),List(JSubRoutineDec(JMethod,JReturnType(Right(JType(JBooleanPrimitiveType))),JName("subName1"),JParameterList(JParameter(JType(JBooleanPrimitiveType),JName("parameter1")),List()),JSubRoutineBody(List(),JStatements(List(JReturnStatement(JExpression(JIntegerTerm(4),List())))))), JSubRoutineDec(JMethod,JReturnType(Right(JType(JBooleanPrimitiveType))),JName("subName1"),JParameterList(JParameter(JType(JBooleanPrimitiveType),JName("parameter1")),List()),JSubRoutineBody(List(),JStatements(List(JReturnStatement(JExpression(JIntegerTerm(4),List())))))))),
-          JClass(JName("className2"),List(JClassVarDec(JStatic,JType(JBooleanPrimitiveType),JName("name2"),List()), JClassVarDec(JStatic,JType(JBooleanPrimitiveType),JName("name2"),List())),List(JSubRoutineDec(JMethod,JReturnType(Right(JType(JBooleanPrimitiveType))),JName("subName2"),JParameterList(JParameter(JType(JBooleanPrimitiveType),JName("parameter2")),List()),JSubRoutineBody(List(),JStatements(List(JReturnStatement(JExpression(JIntegerTerm(4),List())))))), JSubRoutineDec(JMethod,JReturnType(Right(JType(JBooleanPrimitiveType))),JName("subName2"),JParameterList(JParameter(JType(JBooleanPrimitiveType),JName("parameter2")),List()),JSubRoutineBody(List(),JStatements(List(JReturnStatement(JExpression(JIntegerTerm(4),List())))))))),
-          JClass(JName("className3"),List(JClassVarDec(JStatic,JType(JBooleanPrimitiveType),JName("name3"),List()), JClassVarDec(JStatic,JType(JBooleanPrimitiveType),JName("name3"),List())),List(JSubRoutineDec(JMethod,JReturnType(Right(JType(JBooleanPrimitiveType))),JName("subName3"),JParameterList(JParameter(JType(JBooleanPrimitiveType),JName("parameter3")),List()),JSubRoutineBody(List(),JStatements(List(JReturnStatement(JExpression(JIntegerTerm(4),List())))))), JSubRoutineDec(JMethod,JReturnType(Right(JType(JBooleanPrimitiveType))),JName("subName3"),JParameterList(JParameter(JType(JBooleanPrimitiveType),JName("parameter3")),List()),JSubRoutineBody(List(),JStatements(List(JReturnStatement(JExpression(JIntegerTerm(4),List())))))))))))
+          JClass(JName("className1"),List(JClassVarDec(JStatic,JType(JBooleanPrimitiveType),JName("name1"),List()), JClassVarDec(JStatic,JType(JBooleanPrimitiveType),JName("name1"),List())),List(JSubRoutineDec(JMethod,JReturnType(Right(JType(JBooleanPrimitiveType))),JName("subName1"),List(JParameter(JType(JBooleanPrimitiveType),JName("parameter1"))),JSubRoutineBody(List(),JStatements(List(JReturnStatement(JExpression(JIntegerTerm(4),List())))))), JSubRoutineDec(JMethod,JReturnType(Right(JType(JBooleanPrimitiveType))),JName("subName1"),List(JParameter(JType(JBooleanPrimitiveType),JName("parameter1"))),JSubRoutineBody(List(),JStatements(List(JReturnStatement(JExpression(JIntegerTerm(4),List())))))))),
+          JClass(JName("className2"),List(JClassVarDec(JStatic,JType(JBooleanPrimitiveType),JName("name2"),List()), JClassVarDec(JStatic,JType(JBooleanPrimitiveType),JName("name2"),List())),List(JSubRoutineDec(JMethod,JReturnType(Right(JType(JBooleanPrimitiveType))),JName("subName2"),List(JParameter(JType(JBooleanPrimitiveType),JName("parameter2"))),JSubRoutineBody(List(),JStatements(List(JReturnStatement(JExpression(JIntegerTerm(4),List())))))), JSubRoutineDec(JMethod,JReturnType(Right(JType(JBooleanPrimitiveType))),JName("subName2"),List(JParameter(JType(JBooleanPrimitiveType),JName("parameter2"))),JSubRoutineBody(List(),JStatements(List(JReturnStatement(JExpression(JIntegerTerm(4),List())))))))),
+          JClass(JName("className3"),List(JClassVarDec(JStatic,JType(JBooleanPrimitiveType),JName("name3"),List()), JClassVarDec(JStatic,JType(JBooleanPrimitiveType),JName("name3"),List())),List(JSubRoutineDec(JMethod,JReturnType(Right(JType(JBooleanPrimitiveType))),JName("subName3"),List(JParameter(JType(JBooleanPrimitiveType),JName("parameter3"))),JSubRoutineBody(List(),JStatements(List(JReturnStatement(JExpression(JIntegerTerm(4),List())))))), JSubRoutineDec(JMethod,JReturnType(Right(JType(JBooleanPrimitiveType))),JName("subName3"),List(JParameter(JType(JBooleanPrimitiveType),JName("parameter3"))),JSubRoutineBody(List(),JStatements(List(JReturnStatement(JExpression(JIntegerTerm(4),List())))))))))))
   }
 
   "parseJClass" should "return new state with JClass" in {
@@ -69,11 +69,11 @@ class JParserTest extends FlatSpec with Matchers {
     result shouldBe Right(List(), JClass(JName("className"),
       List(JClassVarDec(JStatic, JType(JBooleanPrimitiveType), JName("name"), List()),
         JClassVarDec(JStatic, JType(JBooleanPrimitiveType), JName("name"), List())),
-      List( JSubRoutineDec(JMethod, JReturnType(Right(JType(JBooleanPrimitiveType))), JName("subName"),
-        JParameterList(JParameter(JType(JBooleanPrimitiveType), JName("parameter1")), List()),
+      List(JSubRoutineDec(JMethod, JReturnType(Right(JType(JBooleanPrimitiveType))), JName("subName"),
+        List(JParameter(JType(JBooleanPrimitiveType), JName("parameter1"))),
         JSubRoutineBody(List(), JStatements(List(JReturnStatement(JExpression(JIntegerTerm(4), List())))))),
         JSubRoutineDec(JMethod, JReturnType(Right(JType(JBooleanPrimitiveType))), JName("subName"),
-          JParameterList(JParameter(JType(JBooleanPrimitiveType), JName("parameter1")), List()),
+          List(JParameter(JType(JBooleanPrimitiveType), JName("parameter1"))),
           JSubRoutineBody(List(),JStatements(List(JReturnStatement(JExpression(JIntegerTerm(4), List())))))))))
   }
 
@@ -132,7 +132,7 @@ class JParserTest extends FlatSpec with Matchers {
       JSubRoutineDec(JMethod,
       JReturnType(Right(JType(JBooleanPrimitiveType))),
       JName("subName"),
-      JParameterList(JParameter(JType(JBooleanPrimitiveType), JName("parameter1")), List()),
+      List(JParameter(JType(JBooleanPrimitiveType), JName("parameter1"))),
       JSubRoutineBody(List(),
       JStatements(List(JReturnStatement(JExpression(JIntegerTerm(4), List())))))))
   }
@@ -152,10 +152,11 @@ class JParserTest extends FlatSpec with Matchers {
 
   "parseJParameterList" should "return new state with JParameterList" in {
     val tokens = List(KeywordToken(BooleanKey), IdentifierToken("parameter1"), SymbolToken(Equal))
+    val peekTokens = List(KeywordToken(BooleanKey), KeywordToken(CharKey), KeywordToken(IntKey)) //TODO: Add Identifier
 
-    val result = parser.parseJParameterList().run(tokens)
+    val result = parser.parseJParameterList(peekTokens, parser.parseJParameter()).run(tokens)
     result shouldBe Right(List(SymbolToken(Equal)),
-      JParameterList(JParameter(JType(JBooleanPrimitiveType), JName("parameter1")), List()))
+      List(JParameter(JType(JBooleanPrimitiveType), JName("parameter1"))))
   }
 
   it should "handle multiple parameters" in {
@@ -164,13 +165,14 @@ class JParserTest extends FlatSpec with Matchers {
       SymbolToken(Comma), IdentifierToken("class"), IdentifierToken("parameter3"),
       SymbolToken(Equal))
 
-    val result = parser.parseJParameterList().run(tokens)
+    val peekTokens = List(KeywordToken(BooleanKey), KeywordToken(CharKey), KeywordToken(IntKey)) //TODO: Add Identifier
+
+    val result = parser.parseJParameterList(peekTokens, parser.parseJParameter()).run(tokens)
     result shouldBe Right(List(SymbolToken(Equal)),
-      JParameterList(JParameter(JType(JBooleanPrimitiveType), JName("parameter1")),
-        List(
-          JParameter(JType(JIntPrimitiveType), JName("parameter2")),
+      List(JParameter(JType(JBooleanPrimitiveType), JName("parameter1")),
+           JParameter(JType(JIntPrimitiveType), JName("parameter2")),
           JParameter(JType(JClassNameType("class")), JName("parameter3"))
-        )))
+        ))
   }
 
   "parseSubRoutineBody" should "return new state with JSubRoutineBody" in {
