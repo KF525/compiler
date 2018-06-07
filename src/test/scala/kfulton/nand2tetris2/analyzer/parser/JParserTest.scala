@@ -8,49 +8,48 @@ class JParserTest extends FlatSpec with Matchers {
   val parser = JParser
 
   "parseJClasses" should "return new state with List[JClass]" in {
-//    val tokens = List(KeywordToken(Class), IdentifierToken("className"), SymbolToken(LeftCurlyBracket),
-//      KeywordToken(Static), KeywordToken(BooleanKey), IdentifierToken("name"), SymbolToken(SemiColon),
-//      KeywordToken(Static), KeywordToken(BooleanKey), IdentifierToken("name"), SymbolToken(SemiColon),
-//      KeywordToken(MethodKey), KeywordToken(BooleanKey), IdentifierToken("subName"),
-//      SymbolToken(LeftParen), KeywordToken(BooleanKey), IdentifierToken("parameter1"),
-//      SymbolToken(RightParen), SymbolToken(LeftCurlyBracket), KeywordToken(Return),
-//      IntToken(4), SymbolToken(SemiColon), SymbolToken(RightCurlyBracket),
-//      KeywordToken(MethodKey), KeywordToken(BooleanKey), IdentifierToken("subName"),
-//      SymbolToken(LeftParen), KeywordToken(BooleanKey), IdentifierToken("parameter1"),
-//      SymbolToken(RightParen), SymbolToken(LeftCurlyBracket), KeywordToken(Return),
-//      IntToken(4), SymbolToken(SemiColon), SymbolToken(RightCurlyBracket), SymbolToken(RightCurlyBracket),
-//      KeywordToken(Class), IdentifierToken("className"), SymbolToken(LeftCurlyBracket),
-//      KeywordToken(Static), KeywordToken(BooleanKey), IdentifierToken("name"), SymbolToken(SemiColon),
-//      KeywordToken(Static), KeywordToken(BooleanKey), IdentifierToken("name"), SymbolToken(SemiColon),
-//      KeywordToken(MethodKey), KeywordToken(BooleanKey), IdentifierToken("subName"),
-//      SymbolToken(LeftParen), KeywordToken(BooleanKey), IdentifierToken("parameter1"),
-//      SymbolToken(RightParen), SymbolToken(LeftCurlyBracket), KeywordToken(Return),
-//      IntToken(4), SymbolToken(SemiColon), SymbolToken(RightCurlyBracket),
-//      KeywordToken(MethodKey), KeywordToken(BooleanKey), IdentifierToken("subName"),
-//      SymbolToken(LeftParen), KeywordToken(BooleanKey), IdentifierToken("parameter1"),
-//      SymbolToken(RightParen), SymbolToken(LeftCurlyBracket), KeywordToken(Return),
-//      IntToken(4), SymbolToken(SemiColon), SymbolToken(RightCurlyBracket), SymbolToken(RightCurlyBracket)
-//    )
-//
-//    val result = parser.parseJClasses().run(tokens)
-//    result shouldBe Right(List(), List(JClass(JName("className"),
-//      List(JClassVarDec(JStatic, JType(JBooleanPrimitiveType), JName("name"), List()),
-//        JClassVarDec(JStatic, JType(JBooleanPrimitiveType), JName("name"), List())),
-//      List( JSubRoutineDec(JMethod, JReturnType(Right(JType(JBooleanPrimitiveType))), JName("subName"),
-//        JParameterList(JParameter(JType(JBooleanPrimitiveType), JName("parameter1")), List()),
-//        JSubRoutineBody(List(), JStatements(List(JReturnStatement(JExpression(JIntegerTerm(4), List())))))),
-//        JSubRoutineDec(JMethod, JReturnType(Right(JType(JBooleanPrimitiveType))), JName("subName"),
-//          JParameterList(JParameter(JType(JBooleanPrimitiveType), JName("parameter1")), List()),
-//          JSubRoutineBody(List(),JStatements(List(JReturnStatement(JExpression(JIntegerTerm(4), List())))))))),
-//      JClass(JName("className"),
-//      List(JClassVarDec(JStatic, JType(JBooleanPrimitiveType), JName("name"), List()),
-//        JClassVarDec(JStatic, JType(JBooleanPrimitiveType), JName("name"), List())),
-//      List( JSubRoutineDec(JMethod, JReturnType(Right(JType(JBooleanPrimitiveType))), JName("subName"),
-//        JParameterList(JParameter(JType(JBooleanPrimitiveType), JName("parameter1")), List()),
-//        JSubRoutineBody(List(), JStatements(List(JReturnStatement(JExpression(JIntegerTerm(4), List())))))),
-//        JSubRoutineDec(JMethod, JReturnType(Right(JType(JBooleanPrimitiveType))), JName("subName"),
-//          JParameterList(JParameter(JType(JBooleanPrimitiveType), JName("parameter1")), List()),
-//          JSubRoutineBody(List(),JStatements(List(JReturnStatement(JExpression(JIntegerTerm(4), List()))))))))))
+    val tokens = List(KeywordToken(Class), IdentifierToken("className1"), SymbolToken(LeftCurlyBracket),
+      KeywordToken(Static), KeywordToken(BooleanKey), IdentifierToken("name1"), SymbolToken(SemiColon),
+      KeywordToken(Static), KeywordToken(BooleanKey), IdentifierToken("name1"), SymbolToken(SemiColon),
+      KeywordToken(MethodKey), KeywordToken(BooleanKey), IdentifierToken("subName1"),
+      SymbolToken(LeftParen), KeywordToken(BooleanKey), IdentifierToken("parameter1"),
+      SymbolToken(RightParen), SymbolToken(LeftCurlyBracket), KeywordToken(Return),
+      IntToken(4), SymbolToken(SemiColon), SymbolToken(RightCurlyBracket),
+      KeywordToken(MethodKey), KeywordToken(BooleanKey), IdentifierToken("subName1"),
+      SymbolToken(LeftParen), KeywordToken(BooleanKey), IdentifierToken("parameter1"),
+      SymbolToken(RightParen), SymbolToken(LeftCurlyBracket), KeywordToken(Return),
+      IntToken(4), SymbolToken(SemiColon), SymbolToken(RightCurlyBracket), SymbolToken(RightCurlyBracket),
+      KeywordToken(Class), IdentifierToken("className2"), SymbolToken(LeftCurlyBracket),
+      KeywordToken(Static), KeywordToken(BooleanKey), IdentifierToken("name2"), SymbolToken(SemiColon),
+      KeywordToken(Static), KeywordToken(BooleanKey), IdentifierToken("name2"), SymbolToken(SemiColon),
+      KeywordToken(MethodKey), KeywordToken(BooleanKey), IdentifierToken("subName2"),
+      SymbolToken(LeftParen), KeywordToken(BooleanKey), IdentifierToken("parameter2"),
+      SymbolToken(RightParen), SymbolToken(LeftCurlyBracket), KeywordToken(Return),
+      IntToken(4), SymbolToken(SemiColon), SymbolToken(RightCurlyBracket),
+      KeywordToken(MethodKey), KeywordToken(BooleanKey), IdentifierToken("subName2"),
+      SymbolToken(LeftParen), KeywordToken(BooleanKey), IdentifierToken("parameter2"),
+      SymbolToken(RightParen), SymbolToken(LeftCurlyBracket), KeywordToken(Return),
+      IntToken(4), SymbolToken(SemiColon), SymbolToken(RightCurlyBracket), SymbolToken(RightCurlyBracket),
+      KeywordToken(Class), IdentifierToken("className3"), SymbolToken(LeftCurlyBracket),
+      KeywordToken(Static), KeywordToken(BooleanKey), IdentifierToken("name3"), SymbolToken(SemiColon),
+      KeywordToken(Static), KeywordToken(BooleanKey), IdentifierToken("name3"), SymbolToken(SemiColon),
+      KeywordToken(MethodKey), KeywordToken(BooleanKey), IdentifierToken("subName3"),
+      SymbolToken(LeftParen), KeywordToken(BooleanKey), IdentifierToken("parameter3"),
+      SymbolToken(RightParen), SymbolToken(LeftCurlyBracket), KeywordToken(Return),
+      IntToken(4), SymbolToken(SemiColon), SymbolToken(RightCurlyBracket),
+      KeywordToken(MethodKey), KeywordToken(BooleanKey), IdentifierToken("subName3"),
+      SymbolToken(LeftParen), KeywordToken(BooleanKey), IdentifierToken("parameter3"),
+      SymbolToken(RightParen), SymbolToken(LeftCurlyBracket), KeywordToken(Return),
+      IntToken(4), SymbolToken(SemiColon), SymbolToken(RightCurlyBracket), SymbolToken(RightCurlyBracket)
+    )
+
+    val result = parser.parseJClasses().run(tokens)
+    result shouldBe Right(
+      (List(),
+        List(
+          JClass(JName("className1"),List(JClassVarDec(JStatic,JType(JBooleanPrimitiveType),JName("name1"),List()), JClassVarDec(JStatic,JType(JBooleanPrimitiveType),JName("name1"),List())),List(JSubRoutineDec(JMethod,JReturnType(Right(JType(JBooleanPrimitiveType))),JName("subName1"),JParameterList(JParameter(JType(JBooleanPrimitiveType),JName("parameter1")),List()),JSubRoutineBody(List(),JStatements(List(JReturnStatement(JExpression(JIntegerTerm(4),List())))))), JSubRoutineDec(JMethod,JReturnType(Right(JType(JBooleanPrimitiveType))),JName("subName1"),JParameterList(JParameter(JType(JBooleanPrimitiveType),JName("parameter1")),List()),JSubRoutineBody(List(),JStatements(List(JReturnStatement(JExpression(JIntegerTerm(4),List())))))))),
+          JClass(JName("className2"),List(JClassVarDec(JStatic,JType(JBooleanPrimitiveType),JName("name2"),List()), JClassVarDec(JStatic,JType(JBooleanPrimitiveType),JName("name2"),List())),List(JSubRoutineDec(JMethod,JReturnType(Right(JType(JBooleanPrimitiveType))),JName("subName2"),JParameterList(JParameter(JType(JBooleanPrimitiveType),JName("parameter2")),List()),JSubRoutineBody(List(),JStatements(List(JReturnStatement(JExpression(JIntegerTerm(4),List())))))), JSubRoutineDec(JMethod,JReturnType(Right(JType(JBooleanPrimitiveType))),JName("subName2"),JParameterList(JParameter(JType(JBooleanPrimitiveType),JName("parameter2")),List()),JSubRoutineBody(List(),JStatements(List(JReturnStatement(JExpression(JIntegerTerm(4),List())))))))),
+          JClass(JName("className3"),List(JClassVarDec(JStatic,JType(JBooleanPrimitiveType),JName("name3"),List()), JClassVarDec(JStatic,JType(JBooleanPrimitiveType),JName("name3"),List())),List(JSubRoutineDec(JMethod,JReturnType(Right(JType(JBooleanPrimitiveType))),JName("subName3"),JParameterList(JParameter(JType(JBooleanPrimitiveType),JName("parameter3")),List()),JSubRoutineBody(List(),JStatements(List(JReturnStatement(JExpression(JIntegerTerm(4),List())))))), JSubRoutineDec(JMethod,JReturnType(Right(JType(JBooleanPrimitiveType))),JName("subName3"),JParameterList(JParameter(JType(JBooleanPrimitiveType),JName("parameter3")),List()),JSubRoutineBody(List(),JStatements(List(JReturnStatement(JExpression(JIntegerTerm(4),List())))))))))))
   }
 
   "parseJClass" should "return new state with JClass" in {

@@ -10,7 +10,6 @@ class Tokenizer {
       (currentTokens, line) =>
         val chars = line.toCharArray.toList
         val (newTokens: List[Either[Token, TokenizerError]], insideMLComment) = tokenizeLine(chars.head.toString, chars.tail, currentTokens._2, currentTokens._1)
-        //(Stream.concat(tokens, newTokens), insideMLComment)
         (tokens ++ newTokens, insideMLComment)
     }
     finalTokens
