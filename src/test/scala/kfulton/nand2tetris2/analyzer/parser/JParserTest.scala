@@ -1,6 +1,7 @@
 package kfulton.nand2tetris2.analyzer.parser
 
 import cats.implicits._
+import kfulton.nand2tetris2.analyzer.parser.jack._
 import kfulton.nand2tetris2.analyzer.tokenizer.tokens._
 import org.scalatest.{FlatSpec, Matchers}
 

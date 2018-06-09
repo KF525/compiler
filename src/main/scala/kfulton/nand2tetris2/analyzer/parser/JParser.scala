@@ -3,7 +3,9 @@ package kfulton.nand2tetris2.analyzer.parser
 import cats.data.StateT
 import cats.implicits._
 import kfulton.nand2tetris2.analyzer.parser.JStatementsParser._
+import kfulton.nand2tetris2.analyzer.parser.jack._
 import kfulton.nand2tetris2.analyzer.tokenizer.tokens._
+import kfulton.nand2tetris2.analyzer.tokenizer.tokens.Token
 
 object JParser {
   type Tokens = List[Token]
@@ -26,7 +28,7 @@ object JParser {
       jClassVarDec <- parseJClassVarDecList(List(KeywordToken(Static), KeywordToken(Field)))
       jSubRoutineDec <- parseJSubRoutineDecList(List(KeywordToken(ConstructorKey), KeywordToken(FunctionKey), KeywordToken(MethodKey)))
       _ <- matchToken(SymbolToken(RightCurlyBracket))
-    } yield JClass(jName, jClassVarDec, jSubRoutineDec)
+    } yield jack.JClass(jName, jClassVarDec, jSubRoutineDec)
 
   def parseJClassVarDecList(peekTokens: List[Token], list: List[JClassVarDec] = List()): Parser[List[JClassVarDec]] =
     for {
@@ -88,7 +90,7 @@ object JParser {
       parameterList <- parseJParameterList(List(KeywordToken(CharKey), KeywordToken(BooleanKey), KeywordToken(IntKey)), parseJParameter())
       _ <- matchToken(SymbolToken(RightParen))
       jSubRoutineBody <- parseJSubRoutineBody()
-    } yield JSubRoutineDec(jSubRoutineType, jReturnType, name, parameterList, jSubRoutineBody)
+    } yield jack.JSubRoutineDec(jSubRoutineType, jReturnType, name, parameterList, jSubRoutineBody)
 
   def parsesubRoutineDecType() =
     StateT[ParseResultOrError, Tokens, JSubRoutineType] {

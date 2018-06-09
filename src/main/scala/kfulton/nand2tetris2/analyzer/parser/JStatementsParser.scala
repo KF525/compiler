@@ -3,6 +3,7 @@ package kfulton.nand2tetris2.analyzer.parser
 import cats.implicits._
 import kfulton.nand2tetris2.analyzer.parser.JExpressionsParser._
 import kfulton.nand2tetris2.analyzer.parser.JParser.{Parser, _}
+import kfulton.nand2tetris2.analyzer.parser.jack._
 import kfulton.nand2tetris2.analyzer.tokenizer.tokens._
 
 object JStatementsParser {

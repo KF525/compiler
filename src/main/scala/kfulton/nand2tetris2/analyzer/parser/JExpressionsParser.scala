@@ -3,6 +3,7 @@ package kfulton.nand2tetris2.analyzer.parser
 import cats.data.StateT
 import cats.implicits._
 import kfulton.nand2tetris2.analyzer.parser.JParser.{ParseResultOrError, Parser, Tokens, _}
+import kfulton.nand2tetris2.analyzer.parser.jack._
 import kfulton.nand2tetris2.analyzer.tokenizer.tokens._
 
 object JExpressionsParser {
@@ -13,7 +14,7 @@ object JExpressionsParser {
       additional <- parseAdditional[JOpTerm](List(SymbolToken(Plus), SymbolToken(Minus), SymbolToken(Asterisk),
         SymbolToken(Slash), SymbolToken(Amp), SymbolToken(Pipe), SymbolToken(GreaterThan), SymbolToken(LessThan),
         SymbolToken(Equal)), parseOpTerm())
-    } yield JExpression(jTerm, additional)
+    } yield jack.JExpression(jTerm, additional)
 
 
   def parseJExpressionList(): Parser[List[JExpression]] =
