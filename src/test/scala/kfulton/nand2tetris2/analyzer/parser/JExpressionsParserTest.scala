@@ -111,7 +111,7 @@ class JExpressionsParserTest extends FlatSpec with Matchers {
     result shouldBe Right(List(),
       JSubRoutineExpressionTerm(JBareSubRoutineCall(
         JName("name"),
-        JExpressionList(JExpression(JIntegerTerm(4), List()), List()))))
+        List(JExpression(JIntegerTerm(4), List())))))
   }
 
   "parseSubRoutineCall" should "return new state with Bare Call" in {
@@ -124,7 +124,7 @@ class JExpressionsParserTest extends FlatSpec with Matchers {
     result shouldBe Right(List(),
       JBareSubRoutineCall(
         JName("name"),
-        JExpressionList(JExpression(JIntegerTerm(4), List()), List())))
+        List(JExpression(JIntegerTerm(4), List()))))
   }
 
   it should "return new state with Class Call" in {
@@ -136,7 +136,8 @@ class JExpressionsParserTest extends FlatSpec with Matchers {
       SymbolToken(RightParen))
 
     val result = parser.parseJSubRoutineCallType(JName("name")).run(tokens)
-    result shouldBe Right(List(), JClassSubroutineCall(JName("name"), JName("subname"), JExpressionList(JExpression(JIntegerTerm(4), List()), List())))
+    result shouldBe Right(List(), JClassSubroutineCall(JName("name"), JName("subname"),
+      List(JExpression(JIntegerTerm(4), List()))))
   }
 
   "parseJExpression" should "return new state with JExpression" in {
@@ -157,8 +158,7 @@ class JExpressionsParserTest extends FlatSpec with Matchers {
     val tokens = List(IntToken(5), SymbolToken(Plus), IntToken(5), KeywordToken(Var))
 
     val result = parser.parseJExpressionList().run(tokens)
-    result shouldBe Right((List(KeywordToken(Var)),
-      JExpressionList(JExpression(JIntegerTerm(5), List(JOpTerm(JPlus, JIntegerTerm(5)))), List())))
+    result shouldBe Right((List(KeywordToken(Var)),List(JExpression(JIntegerTerm(5),List(JOpTerm(JPlus,JIntegerTerm(5)))))))
   }
 
   it should "handle more than one JExpressions" in {
@@ -166,7 +166,6 @@ class JExpressionsParserTest extends FlatSpec with Matchers {
       SymbolToken(Comma), IntToken(5), SymbolToken(Plus), IntToken(5), KeywordToken(Var))
 
     val result = parser.parseJExpressionList().run(tokens)
-    result shouldBe Right((List(KeywordToken(Var)),
-    JExpressionList(JExpression(JIntegerTerm(6), List(JOpTerm(JMinus, JIntegerTerm(3)))), List(JExpression(JIntegerTerm(5), List(JOpTerm(JPlus, JIntegerTerm(5))))))))
+    result shouldBe Right((List(IntToken(5), SymbolToken(Plus), IntToken(5), KeywordToken(Var)),List(JExpression(JIntegerTerm(6),List(JOpTerm(JMinus,JIntegerTerm(3)))))))
   }
 }

@@ -94,15 +94,14 @@ class JStatementsParserTest extends FlatSpec with Matchers {
     )
 
     val result = parser.parseJStatement().run(tokens)
-    result shouldBe Right(List(), (
-      JDoStatement(JSubRoutineCall(JBareSubRoutineCall(JName("sub"),
-        JExpressionList(JExpression(JIntegerTerm(4), List()), List()))))))
+    result shouldBe Right(List(), JDoStatement(JSubRoutineCall(JBareSubRoutineCall(JName("sub"),
+        List(JExpression(JIntegerTerm(4), List()))))))
   }
 
   it should "handle invalid statements" in {
     val tokens = List(KeywordToken(Return), SymbolToken(Comma), SymbolToken(SemiColon))
 
     val result = parser.parseJStatement().run(tokens)
-    result shouldBe Left("Expected: a valid SymbolToken but got: SymbolToken(Comma)")
+    result shouldBe Left("Expected: a valid JTerm token but got: Some(SymbolToken(Comma))")
   }
 }

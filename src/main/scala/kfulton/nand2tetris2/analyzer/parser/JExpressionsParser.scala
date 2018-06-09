@@ -15,20 +15,12 @@ object JExpressionsParser {
         SymbolToken(Equal)), parseOpTerm())
     } yield JExpression(jTerm, additional)
 
-  def parseJExpressionList(): Parser[JExpressionList] =
-    for {
-      expression <- parseJExpression()
-      additional <- parseAdditional[JExpression](List(SymbolToken(Comma)), parseMultipleJExpressions())
-    } yield JExpressionList(expression, additional)
 
-  private def parseMultipleJExpressions(): Parser[JExpression] =
+  def parseJExpressionList(): Parser[List[JExpression]] =
     for {
-      _ <- matchToken(SymbolToken(Comma))
-      jTerm <- parseJTerm()
-      additional <- parseAdditional[JOpTerm](List(SymbolToken(Plus), SymbolToken(Minus), SymbolToken(Asterisk),
-        SymbolToken(Slash), SymbolToken(Amp), SymbolToken(Pipe), SymbolToken(GreaterThan), SymbolToken(LessThan),
-        SymbolToken(Equal)), parseOpTerm())
-    } yield JExpression(jTerm, additional)
+      jExpression <- parseDelimitedList[JExpression](List(SymbolToken(Tilda), SymbolToken(Dash), SymbolToken(LeftParen)), parseJExpression(),
+        peekIncludesIdentifiers = true, peekIncludesInts = true, peekIncludesKeywords = true, peekIncludesStrings = true)
+    } yield jExpression
 
   private def parseOpTerm() =
     for {
@@ -44,8 +36,10 @@ object JExpressionsParser {
         case Some(StringToken(s)) => parseJStringTerm()
         case Some(KeywordToken(k)) => parseJKeywordTerm()
         case Some(SymbolToken(LeftParen)) => parseJExpressionTerm()
-        case Some(SymbolToken(sy)) => parseJUnaryOpTerm()
+        case Some(SymbolToken(Dash)) => parseJUnaryOpTerm()
+        case Some(SymbolToken(Tilda)) => parseJUnaryOpTerm()
         case Some(IdentifierToken(id)) => parseIdentifierTerms()
+        case _ =>  StateT[ParseResultOrError, Tokens, JTerm] { tokens => Left(s"Expected: a valid JTerm token but got: $t") }
       }
     } yield jTerm
 
@@ -106,7 +100,7 @@ object JExpressionsParser {
         _ <- matchToken(SymbolToken(LeftParen))
         jExpressionList <- parseJExpressionList()
         _ <- matchToken(SymbolToken(RightParen))
-      } yield JBareSubRoutineCall(name, JExpressionList(JExpression(JIntegerTerm(4), List()), List()))
+      } yield JBareSubRoutineCall(name, jExpressionList)
 
   private def parseJClassSubRoutineCall(name: JName) =
     for {

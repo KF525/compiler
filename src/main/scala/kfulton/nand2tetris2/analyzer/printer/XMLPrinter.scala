@@ -5,9 +5,9 @@ import kfulton.nand2tetris2.analyzer.parser._
 import scala.xml.{Elem, Node}
 class XMLPrinter {
 
-  def printGrammars(grammar: Stream[Jack], currentXML: Node = <tokens></tokens>): Node = grammar match {
-    case Stream.Empty => currentXML
-    case h #:: t => //h match {
+  def printGrammars(grammar: List[Jack], currentXML: Node = <tokens></tokens>): Node = grammar match {
+    case Nil => currentXML
+    case h::t => //h match {
       //case Left(token) =>
         val updatedNode = addChild(currentXML, printXML(h))
         printGrammars(t, updatedNode)

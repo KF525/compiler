@@ -2,8 +2,7 @@ package kfulton.nand2tetris2.analyzer
 
 import java.io.File
 
-import kfulton.nand2tetris2.analyzer.parser.{JClass, JParser}
-import kfulton.nand2tetris2.analyzer.parser.JParser.{ParseResultOrError, Tokens}
+import kfulton.nand2tetris2.analyzer.parser.JParser
 import kfulton.nand2tetris2.analyzer.printer.XMLPrinter
 import kfulton.nand2tetris2.analyzer.tokenizer.Tokenizer
 import kfulton.nand2tetris2.analyzer.tokenizer.tokens.{Token, TokenizerError}
@@ -16,16 +15,12 @@ class JackAnalyzer {
   val printer = new XMLPrinter
 
   def runAnalyzer(path: String) = {
-    val eitherTokens: List[Either[Token, TokenizerError]] = tokenizer.advance(program(path))
+    val eitherTokens: List[Either[Token, TokenizerError]] = tokenizer.advance(getProgram(path))
     val (tokens, failure) = validateTokens(eitherTokens)
-    val x: ParseResultOrError[(Tokens, List[JClass])] = parser.parseJProgram(tokens)
-    x
-
-   // val x = if (failure.isEmpty) parser.parseJProgram(tokens) else
-
-
-
-    //val xml = parser.parseTokens(tokens)
+    parser.parseJProgram(tokens) match {
+      case Left(e) =>
+      case Right(result) => printer.printGrammars(result._2)
+    }
   }
 
   def validateTokens(eitherTokens: List[Either[Token, TokenizerError]],
@@ -38,7 +33,7 @@ class JackAnalyzer {
       case (Right(tokenizerError) :: t, None) => validateTokens(t, tokens, Some(tokenizerError))
     }
 
-  def program(path: String): List[String] = {
+  def getProgram(path: String): List[String] = {
     val file = new File(path)
     Source.fromFile(file).getLines().toList
   }

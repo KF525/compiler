@@ -249,12 +249,4 @@ class JParserTest extends FlatSpec with Matchers {
     val result = parser.peekOption().run(tokens)
     result shouldBe Right(List(), None)
   }
-
-  "pop" should "remove and return the next token" in {
-    pending
-  }
-
-  "removeToken" should "remove the next token" in {
-   pending
-  }
 }

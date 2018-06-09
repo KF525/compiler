@@ -35,17 +35,15 @@ case object JBooleanPrimitiveType extends JPrimitiveType
 case class JClassNameType(id: String) extends JPrimitiveType
 
 case class JParameter(jType: JType, jName: JName)
-//TODO: The first jParameter   is optional...
 case class JParameterList(jParameters: List[JParameter]) extends Jack
 case class JExpression(term: JTerm, additional: List[JOpTerm]) extends Jack
-//TODO: The first expression is optional...
-case class JExpressionList(expression: JExpression, additionalJExpression: List[JExpression]) extends Jack
+case class JExpressionList(jexpression: List[JExpression]) extends Jack
 
 case class JSubRoutineCall(subRoutineCallType: JSubRoutineCallType) extends Jack
 sealed trait JSubRoutineCallType extends Jack
-case class JBareSubRoutineCall(jName: JName, jExpressionList: JExpressionList) extends JSubRoutineCallType
+case class JBareSubRoutineCall(jName: JName, jExpressionList: List[JExpression]) extends JSubRoutineCallType
 case class JClassSubroutineCall(jName: JName, subroutineName: JName,
-                                expressionList: JExpressionList) extends JSubRoutineCallType
+                                expressionList: List[JExpression]) extends JSubRoutineCallType
 
 case class JOpTerm(op: JOp, term: JTerm)
 

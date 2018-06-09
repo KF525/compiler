@@ -10,7 +10,7 @@ object JParser {
   type ParseResultOrError[T] = Either[String, T]
   type Parser[T] = StateT[ParseResultOrError, Tokens, T]
 
-  def parseJProgram(tokens: List[Token]) = parseJClasses().run(tokens)
+  def parseJProgram(tokens: List[Token]): ParseResultOrError[(Tokens, List[JClass])] = parseJClasses().run(tokens)
 
   def parseJClasses(): Parser[List[JClass]] =
     for {
@@ -23,14 +23,14 @@ object JParser {
       _ <- matchToken(KeywordToken(Class))
       jName <- parseJName()
       _ <- matchToken(SymbolToken(LeftCurlyBracket))
-      jClassVarDec <- parseJClassVarDecList(List(KeywordToken(Static), KeywordToken(Field))) //TODO: IdentifierToken
+      jClassVarDec <- parseJClassVarDecList(List(KeywordToken(Static), KeywordToken(Field)))
       jSubRoutineDec <- parseJSubRoutineDecList(List(KeywordToken(ConstructorKey), KeywordToken(FunctionKey), KeywordToken(MethodKey)))
       _ <- matchToken(SymbolToken(RightCurlyBracket))
     } yield JClass(jName, jClassVarDec, jSubRoutineDec)
 
   def parseJClassVarDecList(peekTokens: List[Token], list: List[JClassVarDec] = List()): Parser[List[JClassVarDec]] =
     for {
-      optionJParameter <- parseOption(peekTokens, parseJClassVarDec)
+      optionJParameter <- parseOption(peekTokens, parseJClassVarDec, true)
       jClassVarDecList <- optionJParameter match {
         case Some(add) => parseJClassVarDecList(peekTokens, list :+ add)
         case None => completedAdditional(list)
@@ -111,7 +111,7 @@ object JParser {
 
   def parseJParameterList(peekTokens: List[Token], parseF: Parser[JParameter]): Parser[List[JParameter]] =
     for {
-     jParameterList <- parseDelimitedList[JParameter](peekTokens, parseF)
+     jParameterList <- parseDelimitedList[JParameter](peekTokens, parseF, peekIncludesIdentifiers = true)
     } yield jParameterList
 
   def parseJParameter(): Parser[JParameter] =
@@ -156,10 +156,16 @@ object JParser {
       case _ => Left(s"Expected: $expected but reached end")
     }
 
-  def parseDelimitedList[T](peekTokens: List[Token], parseF: Parser[T], delimiter: Token = SymbolToken(Comma),
+  def parseDelimitedList[T](peekTokens: List[Token],
+                            parseF: Parser[T],
+                            peekIncludesIdentifiers: Boolean = false,
+                            peekIncludesStrings: Boolean = false,
+                            peekIncludesInts: Boolean = false,
+                            peekIncludesKeywords: Boolean = false,
+                            delimiter: Token = SymbolToken(Comma),
                             list: List[T] = List()): Parser[List[T]] =
     for {
-      optionT <- parseOption(peekTokens, parseF, true)
+      optionT <- parseOption(peekTokens, parseF, peekIncludesIdentifiers,peekIncludesStrings, peekIncludesInts, peekIncludesKeywords)
       tList <- optionT match {
         case Some(t) => parseDelimitedRemainingList(peekTokens, delimiter, parseF, t +:list)
         case None => completedAdditional(list)
@@ -203,17 +209,20 @@ object JParser {
   def peekOption(): StateT[ParseResultOrError, Tokens, Option[Token]] =
     StateT[ParseResultOrError, Tokens, Option[Token]]{ tokens => Right((tokens, tokens.headOption)) }
 
-  def removeToken(): StateT[ParseResultOrError, Tokens, Unit] =
-    StateT[ParseResultOrError, Tokens, Unit]{ tokens => Right((tokens.tail, ())) }
-
-  def pop(): StateT[ParseResultOrError, Tokens, Token] =
-    StateT[ParseResultOrError, Tokens, Token] { tokens => Right((tokens.tail, tokens.head)) }
-
-  def parseOption[T](peekTokens: List[Token], parseF: Parser[T], peekIncludesIdentifiers: Boolean = false): StateT[ParseResultOrError, Tokens, Option[T]] =
+ def parseOption[T](peekTokens: List[Token], parseF: Parser[T],
+                     peekIncludesIdentifiers: Boolean = false,
+                     peekIncludesStrings: Boolean = false,
+                     peekIncludesInts: Boolean = false,
+                     peekIncludesKeywords: Boolean = false): StateT[ParseResultOrError, Tokens, Option[T]] =
     for {
       t <- peekOption()
       option <- t match {
-        case y if t.isDefined && (peekTokens.contains(t.get) || (peekIncludesIdentifiers && t.get.isInstanceOf[IdentifierToken])) => parseSome(parseF)
+        case y if t.isDefined &&
+          (peekTokens.contains(t.get)
+            || (peekIncludesIdentifiers && t.get.isInstanceOf[IdentifierToken])
+            || (peekIncludesStrings && t.get.isInstanceOf[StringToken])
+            || (peekIncludesInts && t.get.isInstanceOf[IntToken])
+            || (peekIncludesKeywords && t.get.isInstanceOf[KeywordToken])) => parseSome(parseF)
         case n => parseNone()
       }
     } yield option
